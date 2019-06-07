@@ -1,0 +1,18 @@
+p.gallery {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: "Arial", Helvetica, sans-serif;
+}
+
+p.channel {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: rgb(155, 155, 155);
+}
+p.title {
+  font-size: 12px;
+  color: rgb(95, 95, 95);
+  margin-top: 3px;
+  margin-bottom: 3px;
+  font-weight: bold;
+}

@@ -1,0 +1,42 @@
+#usermenu-dropdown {
+  border-color: white;
+  padding-right: 0px;
+  padding-top: 4px;
+  height: 20px;
+}
+#usermenu-dropdown-avatar {
+  border-radius: 15%;
+  width: 25px;
+  height: 25px;
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  color: black !important;
+  height: inherit;
+  background-color: white;
+}
+.userMenuOuter {
+  display: flex;
+  align-items: center;
+  color: black !important;
+
+  background-color: white;
+  margin-right: 25px;
+}
+
+.userMenu-avatar {
+  margin-right: -15px;
+}
+
+.userMenu-menu {
+  background-color: white !important;
+  height: inherit;
+}
+
+.guestMenu {
+  display: flex;
+  align-items: center;
+  margin-right: 25px;
+}

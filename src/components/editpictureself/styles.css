@@ -1,0 +1,56 @@
+#main {
+  display: -webkit-flex; /* Safari */
+  -webkit-align-items: center; /* Safari 7.0+ */
+  display: flex;
+
+  overflow: auto; /*for scrollbar*/
+  white-space: nowrap; /*for scrollbar*/
+}
+#main button {
+  margin: 20px;
+}
+#editpictureself-header {
+  margin-top: 20px;
+  margin-left: 0px;
+  font-size: 18px;
+}
+#editpictureself-howitworks-link {
+  display: inline-block;
+  font-size: 14px;
+
+  color: dodgerblue;
+}
+.btn {
+  display: inline-block;
+}
+.initialAddButtonDiv {
+  padding: 15px;
+  border: 1px;
+  border-color: rgb(220, 220, 220);
+  border-radius: 5px;
+  border-style: dashed;
+  margin-bottom: 35px;
+}
+.variant-container {
+  display: flex;
+  align-items: flex-start;
+}
+.variant-img {
+  right: 40px;
+  top: 45px;
+  position: absolute;
+}
+.variant-delete-button {
+  position: absolute;
+  right: 0px;
+}
+.variant-file-button {
+  position: absolute;
+  right: 0px;
+  top: 45px;
+}
+p.error-on-post {
+  color: rgb(200, 50, 50);
+  text-align: center;
+  font-size: 18px;
+}

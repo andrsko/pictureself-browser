@@ -1,0 +1,153 @@
+#p-info::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+#p-info::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 0;
+  border-radius: 0;
+}
+
+/* Handle */
+#p-info::-webkit-scrollbar-thumb {
+  background: rgb(215, 215, 215);
+  border-radius: 0;
+}
+
+/* Handle on hover */
+#p-info::-webkit-scrollbar-thumb:hover {
+  background: rgb(215, 215, 215);
+}
+#p-container {
+  position: relative;
+}
+#p-container a:any-link {
+  text-decoration: none;
+  cursor: pointer;
+  color: #0856bd;
+}
+#p-container a:-webkit-any-link {
+  text-decoration: none;
+  cursor: pointer;
+  color: #0856bd;
+  font-weight: bold;
+}
+#p-background {
+  background-color: rgb(235, 235, 235);
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+#p-outer {
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 15px;
+  left: 0;
+  text-align: center;
+  background-color: rgba(226, 99, 99, 0);
+}
+
+#p-inner {
+  display: inline-block;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 15px;
+  padding-right: 0px;
+  text-align: left;
+  border-radius: 0.7%;
+
+  background-color: white;
+}
+#p-post-inner-space {
+  height: 15px;
+  background-color: rgba(226, 99, 99, 0);
+}
+#p-image-container {
+  overflow: auto; /*for scrollbar*/
+  white-space: nowrap; /*for scrollbar*/
+}
+#p-title {
+  color: rgb(55, 55, 55);
+  font-size: 24px;
+  text-align: left;
+  margin-top: 5px;
+  margin-left: 0px;
+  margin-bottom: 10px;
+}
+
+#p-name {
+  color: rgb(55, 55, 55);
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+#p-channel {
+}
+#p-date {
+  color: rgb(155, 155, 155);
+  font-size: 12px;
+  text-align: left;
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+#p-menu {
+  margin-left: 15px;
+  display: inline-block;
+  vertical-align: top;
+  width: 250px;
+}
+#p-edit-button {
+  margin-bottom: 10px;
+}
+#p-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+#p-like-download-buttons {
+  text-align: right;
+  margin-right: 15px;
+
+  display: block;
+}
+#p-info {
+  overflow-wrap: break-word;
+  overflow: auto; /*for scrollbar*/
+  padding-right: 35px;
+}
+#p-comment {
+  margin-top: 10px;
+  margin-left: 0px;
+  text-align: left;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+#p-avatar {
+  vertical-align: middle;
+  width: 35px;
+  height: 35px;
+  border-radius: 10%;
+
+  margin-right: 5px;
+}
+#p-customize-button {
+  float: left;
+
+  letter-spacing: 1px;
+  font-size: 15px;
+  color: dodgerBlue;
+  cursor: pointer;
+  font-weight: bold;
+}

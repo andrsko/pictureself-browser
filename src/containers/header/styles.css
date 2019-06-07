@@ -1,0 +1,24 @@
+.headerContainer {
+  background-color: white;
+
+  height: 50px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: space-between;
+  border-bottom: 1px solid rgb(235, 235, 235);
+}
+#header-logo-search {
+  display: flex;
+  align-items: center;
+}
+.headerContainerWrapperSticky {
+  position: fixed;
+  z-index: 15;
+  top: 0;
+  left: 0;
+  margin: auto;
+  width: 100%;
+}

@@ -1,0 +1,33 @@
+.usersContainer {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+}
+
+.users-error {
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 33%;
+  color: rgba(231, 76, 60, 1);
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.usersContainer .userCard {
+  margin: 25px 45px;
+  width: fit-content;
+  font-size: 12px;
+  text-align: center;
+}
+#subscription-list-title {
+  margin-left: 95px;
+  margin-top: 15px;
+  font-size: 22px;
+  margin-bottom: -30px;
+}

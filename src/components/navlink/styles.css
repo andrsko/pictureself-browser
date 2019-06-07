@@ -1,0 +1,24 @@
+.navlinkContainer {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  background-color: white;
+  height: inherit;
+}
+
+.navlinkContainer .link {
+  font-size: 18px;
+  font-weight: 300;
+  margin: 0 10px;
+
+  font-family: "Arial", Helvetica, sans-serif;
+}
+
+.navlinkIcon {
+  width: 20px;
+  height: 20px;
+  color: white;
+}
+.navlink-ellipsis-link {
+  padding-bottom: 5px;
+}

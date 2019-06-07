@@ -1,0 +1,56 @@
+.profileContainer {
+  display: flex;
+  vertical-align: top;
+  justify-content: center;
+  padding: 10px;
+  margin-top: 35px;
+}
+
+.profileAvatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 5%;
+  margin-right: 25px;
+}
+
+.profileInfo {
+  margin-left: 20px;
+
+  width: 350px;
+  word-wrap: break-word;
+  white-space: normal;
+}
+.profileInfo a:any-link {
+  text-decoration: none;
+  cursor: pointer;
+  color: #0856bd;
+}
+.profileInfo a:-webkit-any-link {
+  text-decoration: none;
+  cursor: pointer;
+  color: #0856bd;
+  font-weight: bold;
+}
+.profileInfo .name {
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+.profileInfo .username {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.profileInfo .username .staffStatus {
+  color: red;
+}
+.profileInfo .dateJoined {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+.profileInfo .about {
+  font-size: 14px;
+  margin-bottom: 5px;
+
+  word-wrap: break-word;
+  white-space: normal;
+}

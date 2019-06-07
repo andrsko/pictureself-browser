@@ -1,0 +1,14 @@
+A pictureself consists of customizable layers represented through features.
+For example, "face shape" + "mouth" + "nose" + "eyes" + "eyebrows" + "glasses" + "hair" + "hat".
+Feature can have different implementations - variants: "face shape" - ["round", "oval", "square" etc.], "eyes" - ["brown","blue","green" etc.] 
+Implementation depends on customization performed by user.
+So if user choses "face shape" as "square" and "eyes" as "green" pictureself will be composed as follows ["r" - for random customization]:
+square face shape layer -> r mouse layer -> r nose layer -> green eyes layer -> r eyebrows layer -> r glasses layer -> r hair layer -> r hat layer.
+Including feature in different pictureselfs(surprised, angry, happy etc.) means different implementation with the same customization. 
+Thus when user for "eyes" feature have already chosen "green" - 
+in pictureself responding, for example, to surprised state - customization remains - eyes would be green but widened.
+That means that creator includes feature and provides responding variants in the same order: for eyes that would be brown widened, blue widened, green widened.
+In general, feature is just an index of variant chosen by user. So if user chooses green that means that whenever this feature is included in other pictureselfs
+for this particular user variant number 3 would be displayed.
+If implementation of included feature should be the same as in original pictureself "import variants" checkbox lets import corresponding images.
+
