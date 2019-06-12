@@ -15,6 +15,7 @@ import { apiErrorHandler } from "../../utils/errorhandler";
 import Gallery from "../gallery";
 import { Link } from "react-router-dom";
 import Loader from "../loader";
+import { API_URL } from "../../api/constants";
 
 export default class Home extends Component {
   constructor(props) {
@@ -31,7 +32,7 @@ export default class Home extends Component {
   }
 
   fetchPictureselfsIndexApi = () => {
-    return axios.get("http://127.0.0.1:8000/api/p/index/", getConfig());
+    return axios.get(API_URL + "p/index/", getConfig());
   };
 
   fetchPictureselfsIndex = () => {

@@ -15,6 +15,7 @@ import { apiErrorHandler } from "../../utils/errorhandler";
 import { Link } from "react-router-dom";
 import StackGrid from "react-stack-grid";
 import "./styles.css";
+import { API_URL } from "../../api/constants";
 
 export default class Customize extends Component {
   constructor(props) {
@@ -43,14 +44,11 @@ export default class Customize extends Component {
   }
 
   fetchPictureselfFeaturesApi = id => {
-    return axios.get("http://127.0.0.1:8000/api/features/p/" + id, getConfig());
+    return axios.get(API_URL + "features/p/" + id, getConfig());
   };
 
   fetchChannelFeaturesApi = username => {
-    return axios.get(
-      "http://127.0.0.1:8000/api/features/" + username,
-      getConfig()
-    );
+    return axios.get(API_URL + "features/" + username, getConfig());
   };
 
   fetchFeaturesApiPictureselfChannelSwitch = () => {
@@ -85,18 +83,11 @@ export default class Customize extends Component {
     const { type } = this.props;
     if (type == "pictureself") {
       return axios.get(
-        "http://127.0.0.1:8000/api/p/" +
-          this.props.id +
-          "/options/" +
-          feature_id +
-          "/",
+        API_URL + "p/" + this.props.id + "/options/" + feature_id + "/",
         getConfig()
       );
     } else {
-      return axios.get(
-        "http://127.0.0.1:8000/api/p/options/" + feature_id + "/",
-        getConfig()
-      );
+      return axios.get(API_URL + "p/options/" + feature_id + "/", getConfig());
     }
   };
 
@@ -121,7 +112,7 @@ export default class Customize extends Component {
 
   postNewPosition = (feature_id, position) => {
     return axios.post(
-      "http://127.0.0.1:8000/api/customizations/" + feature_id + "/edit/",
+      API_URL + "customizations/" + feature_id + "/edit/",
       { position: position },
       getConfig()
     );

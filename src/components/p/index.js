@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import store from "../../store";
 import Linkify from "linkifyjs/react";
 import Loader from "../loader";
+import { API_URL } from "../../api/constants";
 
 export default class P extends Component {
   constructor(props) {
@@ -33,7 +34,7 @@ export default class P extends Component {
     };
   }
   fetchPictureselfDisplayApi = id => {
-    return axios.get("http://127.0.0.1:8000/api/p/" + id, getConfig());
+    return axios.get(API_URL + "p/" + id, getConfig());
   };
 
   componentDidMount() {
@@ -83,10 +84,7 @@ export default class P extends Component {
   };
 
   toggleLikeApi = id => {
-    return axios.get(
-      "http://127.0.0.1:8000/api/p/" + id + "/toggle-like/",
-      getConfig()
-    );
+    return axios.get(API_URL + "p/" + id + "/toggle-like/", getConfig());
   };
   toggleLike = () => {
     const isAuthenticated = store.getState().auth.isAuthenticated;

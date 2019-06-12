@@ -9,6 +9,7 @@ import { apiErrorHandler } from "../../utils/errorhandler";
 import store from "../../store";
 import { Link } from "react-router-dom";
 import Linkify from "linkifyjs/react";
+import { API_URL } from "../../api/constants";
 
 class Profile extends Component {
   constructor(props) {
@@ -34,7 +35,7 @@ class Profile extends Component {
 
   fetchPictureselfsUserApi = username => {
     return axios.get(
-      "http://127.0.0.1:8000/api/user/" + username + "/pictureselfs/",
+      API_URL + "user/" + username + "/pictureselfs/",
       getConfig()
     );
   };
@@ -56,7 +57,7 @@ class Profile extends Component {
 
   toggleSubscribeApi = id => {
     return axios.get(
-      "http://127.0.0.1:8000/api/user/" + id + "/toggle-subscription/",
+      API_URL + "user/" + id + "/toggle-subscription/",
       getConfig()
     );
   };

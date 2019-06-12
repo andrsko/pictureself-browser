@@ -16,6 +16,7 @@ import Gallery from "../gallery";
 import { Link } from "react-router-dom";
 import Loader from "../loader";
 import "./styles.css";
+import { API_URL } from "../../api/constants";
 
 // ? merge with 'home' component into 'set' component
 export default class Likes extends Component {
@@ -33,10 +34,7 @@ export default class Likes extends Component {
   }
 
   fetchPictureselfsIndexApi = () => {
-    return axios.get(
-      "http://127.0.0.1:8000/api/user/liked-pictureselfs/",
-      getConfig()
-    );
+    return axios.get(API_URL + "user/liked-pictureselfs/", getConfig());
   };
 
   fetchPictureselfsIndex = () => {

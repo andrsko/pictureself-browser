@@ -15,6 +15,7 @@ import { apiErrorHandler } from "../../utils/errorhandler";
 import Gallery from "../gallery";
 import { Link } from "react-router-dom";
 import Loader from "../loader";
+import { API_URL } from "../../api/constants";
 
 import "./styles.css";
 
@@ -39,7 +40,8 @@ export default class SearchResults extends Component {
 
   fetchPictureselfsSearchApi = () => {
     return axios.get(
-      "http://127.0.0.1:8000/api/p/search/" +
+      API_URL +
+        "p/search/" +
         this.props.location.search.substring(
           3,
           this.props.location.search.length

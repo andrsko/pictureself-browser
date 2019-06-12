@@ -15,6 +15,9 @@ import axios from "axios";
 import { getConfig } from "../../utils/config";
 import { apiErrorHandler } from "../../utils/errorhandler";
 import { Link } from "react-router-dom";
+import {
+  API_URL
+} from "../../api/constants";
 
 // ?! dont show alt if file is absent
 class EditVariant extends Component {
@@ -506,13 +509,13 @@ export default class EditPictureself extends Component {
   }
   fetchPictureselfApi = id => {
     return axios.get(
-      "http://127.0.0.1:8000/api/p/" + id + "/data/",
+      API_URL+"p/" + id + "/data/",
       getConfig()
     );
   };
   fetchFeaturesToIncludeApi = id => {
     return axios.get(
-      "http://127.0.0.1:8000/api/p/" + id + "/features-to-include/",
+      API_URL+"p/" + id + "/features-to-include/",
       getConfig()
     );
   };
@@ -527,11 +530,11 @@ export default class EditPictureself extends Component {
         "content-type": "multipart/form-data"
       }
     };
-    return axios.post("http://127.0.0.1:8000/api/p/create/", formData, config);
+    return axios.post( API_URL+"p/create/", formData, config);
   };
   deletePictureselfApi = id => {
     return axios.delete(
-      "http://127.0.0.1:8000/api/p/" + id + "/delete/",
+      API_URL+"p/" + id + "/delete/",
       getConfig()
     );
   };
@@ -548,13 +551,13 @@ export default class EditPictureself extends Component {
     };
     if (this.state.pictureself_id === "0") {
       return axios.post(
-        "http://127.0.0.1:8000/api/p/" + id + "/edit/",
+        API_URL+"p/" + id + "/edit/",
         formData,
         config
       );
     } else {
       return axios.put(
-        "http://127.0.0.1:8000/api/p/" + id + "/edit/",
+        API_URL+"p/" + id + "/edit/",
         formData,
         config
       );
