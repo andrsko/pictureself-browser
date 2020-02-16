@@ -15,9 +15,7 @@ import axios from "axios";
 import { getConfig } from "../../utils/config";
 import { apiErrorHandler } from "../../utils/errorhandler";
 import { Link } from "react-router-dom";
-import {
-  API_URL
-} from "../../api/constants";
+import { API_URL } from "../../api/constants";
 
 // ?! dont show alt if file is absent
 class EditVariant extends Component {
@@ -396,8 +394,9 @@ class EditFeature extends Component {
                     id={"hiddenFileInput" + this.props.feature_index.toString()}
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={e =>
-                      this.props.addVariant(
+                      this.props.addVariants(
                         this.props.feature_index,
                         e.target.files
                       )
@@ -483,7 +482,7 @@ export default class EditPictureself extends Component {
     this.handleFeatureImportDropdownChange = this.handleFeatureImportDropdownChange.bind(
       this
     );
-    this.addVariant = this.addVariant.bind(this);
+    this.addVariants = this.addVariants.bind(this);
     this.state = {
       pictureself_id: this.props.match.params.pictureself, //if create new changes from 0 to created in backend p id
       channel_username: "",
@@ -508,14 +507,11 @@ export default class EditPictureself extends Component {
     };
   }
   fetchPictureselfApi = id => {
-    return axios.get(
-      API_URL+"p/" + id + "/data/",
-      getConfig()
-    );
+    return axios.get(API_URL + "p/" + id + "/data/", getConfig());
   };
   fetchFeaturesToIncludeApi = id => {
     return axios.get(
-      API_URL+"p/" + id + "/features-to-include/",
+      API_URL + "p/" + id + "/features-to-include/",
       getConfig()
     );
   };
@@ -530,13 +526,10 @@ export default class EditPictureself extends Component {
         "content-type": "multipart/form-data"
       }
     };
-    return axios.post( API_URL+"p/create/", formData, config);
+    return axios.post(API_URL + "p/create/", formData, config);
   };
   deletePictureselfApi = id => {
-    return axios.delete(
-      API_URL+"p/" + id + "/delete/",
-      getConfig()
-    );
+    return axios.delete(API_URL + "p/" + id + "/delete/", getConfig());
   };
   editPictureselfApi = (id, editedPictureself) => {
     const formData = new FormData();
@@ -550,17 +543,9 @@ export default class EditPictureself extends Component {
       }
     };
     if (this.state.pictureself_id === "0") {
-      return axios.post(
-        API_URL+"p/" + id + "/edit/",
-        formData,
-        config
-      );
+      return axios.post(API_URL + "p/" + id + "/edit/", formData, config);
     } else {
-      return axios.put(
-        API_URL+"p/" + id + "/edit/",
-        formData,
-        config
-      );
+      return axios.put(API_URL + "p/" + id + "/edit/", formData, config);
     }
   };
   componentDidMount() {
@@ -831,27 +816,40 @@ export default class EditPictureself extends Component {
     this.setState({ variant_order: new_variant_order });
   };
 
-  addVariant = (feature_position, files) => {
-    const new_id = "v" + this.state.nvc.toString();
-    const new_file = files[0];
+  addVariants = (feature_position, files) => {
+    let number_of_files = files.size;
+    let new_variant_ids = [];
+    let new_variant_names = {};
+    let new_variant_files = {};
+    let new_variant_urls = {};
+    let temp_var_id = "";
+    for (let i = 0; i < number_of_files; ++i) {
+      temp_var_id = "v" + (this.state.nvc.toString() + i);
+      new_variant_ids.push(temp_var_id);
+      new_variant_files[temp_var_id] = files[i];
+      new_variant_names[temp_var_id] = files[i].name;
+      new_variant_urls[temp_var_id] = window.URL.createObjectURL(files[i]);
+    }
+    //const new_id = "v" + this.state.nvc.toString();
+    //const new_file = files[0];
     this.setState({
-      variant_files: { ...this.state.variant_files, [new_id]: new_file }
+      variant_files: { ...this.state.variant_files, ...new_variant_files }
     });
-    const new_variant_name = { new_id: new_file.name };
+    //const new_variant_name = { new_id: new_file.name };
     this.setState({
-      variant_names: { ...this.state.variant_names, ...new_variant_name }
+      variant_names: { ...this.state.variant_names, ...new_variant_names }
     });
-    const new_nvc = this.state.nvc + 1;
+    const new_nvc = this.state.nvc + number_of_files;
     this.setState({ nvc: new_nvc });
     let new_variant_order = this.state.variant_order.slice();
     new_variant_order[feature_position] = [
       ...new_variant_order[feature_position],
-      new_id
+      ...new_variant_ids
     ];
     this.setState({ variant_order: new_variant_order });
-    const new_variant_url = window.URL.createObjectURL(new_file);
+    //const new_variant_url = window.URL.createObjectURL(new_file);
     this.setState({
-      variant_urls: { ...this.state.variant_urls, [new_id]: new_variant_url }
+      variant_urls: { ...this.state.variant_urls, ...new_variant_urls }
     });
   };
 
@@ -991,7 +989,7 @@ export default class EditPictureself extends Component {
         variant_names={this.state.variant_names}
         variant_urls={this.state.variant_urls}
         variant_files={this.state.variant_files}
-        addVariant={this.addVariant}
+        addVariants={this.addVariants}
         updateVariant={this.updateVariant}
         insertVariant={this.insertVariant}
         removeVariant={this.removeVariant}
