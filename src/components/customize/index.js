@@ -13,6 +13,7 @@ import axios from "axios";
 import { getConfig } from "../../utils/config";
 import { apiErrorHandler } from "../../utils/errorhandler";
 import { Link } from "react-router-dom";
+import Loader from "../loader";
 import StackGrid from "react-stack-grid";
 import "./styles.css";
 import { API_URL } from "../../api/constants";
@@ -27,12 +28,17 @@ export default class Customize extends Component {
     this.state = {
       feature_ids: [],
       feature_titles: [],
-      activeFeatureId: 0, // id
-      encodings: [], // encodings
+      activeFeatureId: 0,
+      nOptions: 0, //pictureself options specific to active feature
+      encodings: [],
+      alts: [],
+      widths_heights: [],
+      encodingsChunk: [],
+      altsChunk: [],
+      widths_heightsChunk: [],
       activeOptionIndex: -1, // int; -1 = not customized yet: silver border around first option
       ext: "",
-      alts: [],
-      widths_heights: []
+      isLoading: true
     };
   }
 
@@ -78,33 +84,138 @@ export default class Customize extends Component {
       });
   };
 
-  // ? refactor as fetchFeatures(): separate APIs from component method
-  fetchPictureselfOptionsApi = feature_id => {
-    const { type } = this.props;
-    if (type == "pictureself") {
-      return axios.get(
-        API_URL + "p/" + this.props.id + "/options/" + feature_id + "/",
-        getConfig()
-      );
-    } else {
-      return axios.get(API_URL + "p/options/" + feature_id + "/", getConfig());
-    }
+  fetchPictureselfOptionsInfoApi = (pictureselfId, featureId) => {
+    return axios.get(
+      API_URL + "p/" + pictureselfId + "/options-info/" + featureId + "/",
+      getConfig()
+    );
   };
 
-  fetchPictureselfOptions = feature_id => {
-    this.fetchPictureselfOptionsApi(feature_id)
+  /*fetchPictureselfOptionEncodingsChunkApi = (
+    pictureselfId,
+    featureId,
+    startPosition,
+    nOptions
+  ) => {
+    return axios.get(
+      API_URL +
+        "p/" +
+        pictureselfId +
+        "/options-chunk/" +
+        featureId +
+        "/" +
+        startPosition +
+        "/" +
+        nOptions +
+        "/",
+      getConfig()
+    );
+  };*/
+  fetchPictureselfOptionEncodingApi = (
+    pictureselfId,
+    featureId,
+    variantIndex
+  ) => {
+    return axios.get(
+      API_URL +
+        "p/" +
+        pictureselfId +
+        "/option/" +
+        featureId +
+        "/" +
+        variantIndex +
+        "/",
+      getConfig()
+    );
+  };
+
+  fetchPictureselfOptionEncodings = (pictureselfId, featureId) => {
+    const CHUNK_SIZE = 10;
+    const nChunks = ~~(this.state.nOptions / CHUNK_SIZE);
+    const remainder = this.state.nOptions % CHUNK_SIZE;
+    var sequence = Promise.resolve();
+    // "+ 1" to process remainder
+    for (let i = 0; i < nChunks + 1; ++i) {
+      const iChunkSize = i < nChunks ? CHUNK_SIZE : remainder;
+      sequence = sequence.then(() =>
+        this.fetchPictureselfOptionEncodingsChunk(
+          pictureselfId,
+          featureId,
+          i * CHUNK_SIZE,
+          iChunkSize
+        ).then(() => {
+          this.setState(state => ({
+            encodings: state.encodings.concat(state.encodingsChunk),
+            alts: state.alts.concat(state.altsChunk),
+            widths_heights: state.widths_heights.concat(
+              state.widths_heightsChunk
+            ),
+            isLoading: i != nChunks
+          }));
+        })
+      );
+    }
+    return sequence;
+  };
+
+  fetchPictureselfOptionEncodingsChunk = (
+    pictureselfId,
+    featureId,
+    startPosition,
+    nOptions
+  ) => {
+    var sequence = Promise.resolve();
+    this.setState(
+      { encodingsChunk: [], altsChunk: [], widths_heightsChunk: [] },
+      () => {
+        for (let i = 0; i < nOptions; ++i) {
+          sequence = sequence.then(() =>
+            this.fetchPictureselfOptionEncodingApi(
+              pictureselfId,
+              featureId,
+              startPosition + i
+            ).then(response => {
+              this.setState(state => ({
+                encodingsChunk: [
+                  ...state.encodingsChunk,
+                  response.data["encoding"]
+                ],
+                altsChunk: [...state.altsChunk, response.data["alt"]],
+                widths_heightsChunk: [
+                  ...state.widths_heightsChunk,
+                  response.data["width_height"]
+                ]
+              }));
+            })
+          );
+        }
+      }
+    );
+
+    return sequence;
+  };
+
+  fetchPictureselfOptions = featureId => {
+    // can be pictureself or channel
+    const { type } = this.props;
+    const pictureselfId = type == "pictureself" ? this.props.id : "0";
+
+    this.fetchPictureselfOptionsInfoApi(pictureselfId, featureId)
       .then(response => {
-        this.setState({
-          encodings: response.data["encodings"],
-          activeOptionIndex: response.data["active_option_index"],
-          ext: response.data["ext"],
-          alts: response.data["alts"],
-          widths_heights: response.data["widths_heights"]
-        });
+        this.setState(
+          {
+            nOptions: response.data["number_of_options"],
+            activeOptionIndex: response.data["active_option_index"],
+            ext: response.data["ext"]
+          },
+          () => {
+            this.fetchPictureselfOptionEncodings(pictureselfId, featureId);
+          }
+        );
       })
       .catch(error => {
         const errorMessage = apiErrorHandler(error);
-        alert(error);
+        //alert(error);
         // to do
         alert(errorMessage);
       });
@@ -119,9 +230,18 @@ export default class Customize extends Component {
   };
 
   handleActiveFeatureChange = new_active_feature_id => {
-    this.setState({ activeFeatureId: new_active_feature_id }, () => {
-      this.fetchPictureselfOptions(new_active_feature_id);
-    });
+    this.setState(
+      {
+        activeFeatureId: new_active_feature_id,
+        encodings: [],
+        alts: [],
+        widths_heights: [],
+        isLoading: true
+      },
+      () => {
+        this.fetchPictureselfOptions(new_active_feature_id);
+      }
+    );
   };
 
   handleActiveOptionChange = new_active_option_index => {
@@ -136,8 +256,7 @@ export default class Customize extends Component {
     const GUTTER_HEIGHT = 10;
     const ACTIVE_OPTION_BORDER_WIDTH = 4;
     let box_shadow_heights = [];
-    const { widths_heights } = this.state;
-    const encodings = this.state.encodings;
+    const { encodings, widths_heights, isLoading } = this.state;
     let i;
     for (i = 0; i < widths_heights.length; i++) {
       let height =
@@ -235,15 +354,7 @@ export default class Customize extends Component {
         />
       </div>
     ));
-    const optionCardsTest = encodings.map((encoding, index) => (
-      <div onClick={() => this.handleActiveOptionChange(index)} style={{}}>
-        <img
-          src={`data:image/${this.state["ext"]};base64,${encoding}`}
-          alt={this.state["alts"][index]}
-          style={{}}
-        />
-      </div>
-    ));
+
     if (isAuthenticated) {
       return (
         <div>
@@ -276,7 +387,6 @@ export default class Customize extends Component {
           </Link>
           <div id="feature-menu">{featureMenu}</div>
           <br />
-
           <StackGrid
             monitorImagesLoaded={true}
             columnWidth={COLUMN_WIDTH}
@@ -286,6 +396,14 @@ export default class Customize extends Component {
           >
             {optionCards}
           </StackGrid>
+          <div
+            style={{
+              "margin-top": "35px",
+              visibility: isLoading ? "visible" : "hidden"
+            }}
+          >
+            <Loader />
+          </div>
         </div>
       );
     } else return <p>Customization isn't available when logged out.</p>;

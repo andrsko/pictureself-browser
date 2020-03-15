@@ -16,6 +16,7 @@ import { getConfig } from "../../utils/config";
 import { apiErrorHandler } from "../../utils/errorhandler";
 import { Link } from "react-router-dom";
 import { API_URL } from "../../api/constants";
+import { number } from "prop-types";
 
 // ?! dont show alt if file is absent
 class EditVariant extends Component {
@@ -469,6 +470,9 @@ class EditFeature extends Component {
   }
 }
 
+// to do: keep track of created variants in form of separate list
+//        before assigning id check id on duplicating
+
 export default class EditPictureself extends Component {
   constructor(props) {
     super(props);
@@ -487,12 +491,14 @@ export default class EditPictureself extends Component {
       pictureself_id: this.props.match.params.pictureself, //if create new changes from 0 to created in backend p id
       channel_username: "",
       pictureself_title: "",
-      initial_pictureself_title: "", //for header
+      // for header
+      initial_pictureself_title: "",
       pictureself_description: "",
       features_to_include: {},
       features: {},
       feature_order: [],
-      nfc: 0, //"new_features_counter", for id generating
+      // "new_features_counter", for id generating
+      nfc: 0,
       insertChecked: false,
       feature_to_include: "create_new",
       features_with_imported_variants: [],
@@ -503,37 +509,64 @@ export default class EditPictureself extends Component {
       variant_files: {},
       nvc: 0,
       showDeleteModal: false,
-      errorOnPost: "" // 0 variants or error on server side
+      // 0 variants or error on server side
+      // to do: rename "onSave"
+      errorOnPost: "",
+      // number of variant files sent and processed on server
+      // is used to show progress info
+      isUploading: false,
+      nFilesUploaded: 0,
+      legitCreatedVariantIds: [],
+      legitCreatedVariantIdsChunk: []
     };
   }
+
   fetchPictureselfApi = id => {
     return axios.get(API_URL + "p/" + id + "/data/", getConfig());
   };
+
   fetchFeaturesToIncludeApi = id => {
     return axios.get(
       API_URL + "p/" + id + "/features-to-include/",
       getConfig()
     );
   };
-  createPictureselfApi = newPictureself => {
+
+  deletePictureselfApi = id => {
+    return axios.delete(API_URL + "p/" + id + "/delete/", getConfig());
+  };
+
+  editVariantApi = (id, file) => {
     const formData = new FormData();
-    for (const [key, value] of Object.entries(newPictureself)) {
-      formData.append(key, value);
-    }
+    formData.set("file", file);
     const config = {
       headers: {
         Authorization: getConfig().headers.Authorization,
         "content-type": "multipart/form-data"
       }
     };
-    return axios.post(API_URL + "p/create/", formData, config);
+    return axios.put(
+      API_URL + "variants/" + id + "/" + "edit/",
+      formData,
+      config
+    );
   };
-  deletePictureselfApi = id => {
-    return axios.delete(API_URL + "p/" + id + "/delete/", getConfig());
-  };
-  editPictureselfApi = (id, editedPictureself) => {
+
+  createVariantApi = file => {
     const formData = new FormData();
-    for (const [key, value] of Object.entries(editedPictureself)) {
+    formData.set("file", file);
+    const config = {
+      headers: {
+        Authorization: getConfig().headers.Authorization,
+        "content-type": "multipart/form-data"
+      }
+    };
+    return axios.post(API_URL + "variants/" + "create/", formData, config);
+  };
+
+  editPictureselfInfoApi = (id, info) => {
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(info)) {
       formData.append(key, value);
     }
     const config = {
@@ -548,6 +581,26 @@ export default class EditPictureself extends Component {
       return axios.put(API_URL + "p/" + id + "/edit/", formData, config);
     }
   };
+
+  //---draft----
+  /*editPictureselfInfoApi = (id, newInfo) => {
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(newPictureself)) {
+      formData.append(key, value);
+    }
+    const config = {
+      headers: {
+        Authorization: getConfig().headers.Authorization,
+        "content-type": "multipart/form-data"
+      }
+    };
+    if (this.state.pictureself_id === "0") {
+      return axios.post(API_URL + "p/" + id + "/edit/", formData, config);
+    } else {
+      return axios.put(API_URL + "p/" + id + "/edit/", formData, config);
+    }
+  };*/
+
   componentDidMount() {
     const { pictureself } = this.props.match.params;
     this.setState({ pictureself_id: pictureself });
@@ -622,8 +675,25 @@ export default class EditPictureself extends Component {
       });
   };
 
-  getNewPictureself = () => {
+  getNewFiles = () => {
+    // to do: refactor using separate this.state.created_variant_ids and this.state.edited_variant_ids
     const edited_created_variant_ids = Object.keys(this.state.variant_files);
+    let created_variant_ids = [];
+    let edited_variant_ids = [];
+    for (let i = 0; i < edited_created_variant_ids.length; ++i)
+      if (edited_created_variant_ids[i][0] == "v")
+        created_variant_ids.push(edited_created_variant_ids[i]);
+      else edited_variant_ids.push(edited_created_variant_ids[i]);
+    const newFiles = {
+      created_variant_ids: created_variant_ids,
+      edited_variant_ids: edited_variant_ids,
+      variant_files: this.state.variant_files
+    };
+
+    return newFiles;
+  };
+
+  getNewInfo = () => {
     // replacing all unique keys for repeating included feature with initial included feature id
     let normalized_feature_order = this.state.feature_order.slice();
     const normalized_feature_order_length = normalized_feature_order.length;
@@ -635,19 +705,14 @@ export default class EditPictureself extends Component {
         );
       }
     }
-    const newPictureselfWithoutFiles = {
+    const newInfo = {
       title: this.state.pictureself_title,
       description: this.state.pictureself_description,
       feature_order: JSON.stringify(normalized_feature_order),
       variant_order: JSON.stringify(this.state.variant_order),
-      features: JSON.stringify(this.state.features),
-      edited_created_variant_ids: JSON.stringify(edited_created_variant_ids)
+      features: JSON.stringify(this.state.features)
     };
-    const newPictureself = Object.assign(
-      newPictureselfWithoutFiles,
-      this.state.variant_files
-    );
-    return newPictureself;
+    return newInfo;
   };
 
   showImportFeatureDropdown = () =>
@@ -817,14 +882,14 @@ export default class EditPictureself extends Component {
   };
 
   addVariants = (feature_position, files) => {
-    let number_of_files = files.size;
+    let number_of_files = files.length;
     let new_variant_ids = [];
     let new_variant_names = {};
     let new_variant_files = {};
     let new_variant_urls = {};
     let temp_var_id = "";
     for (let i = 0; i < number_of_files; ++i) {
-      temp_var_id = "v" + (this.state.nvc.toString() + i);
+      temp_var_id = "v" + (this.state.nvc + i).toString();
       new_variant_ids.push(temp_var_id);
       new_variant_files[temp_var_id] = files[i];
       new_variant_names[temp_var_id] = files[i].name;
@@ -873,55 +938,246 @@ export default class EditPictureself extends Component {
     }
   };
 
-  // ? not used
-  createPictureself = () => {
-    if (this.atLeastOneVariant()) {
-      const newPictureself = this.getNewPictureself();
-      this.createPictureselfApi(newPictureself)
-        .then(response => {
-          alert(response.data.new_pictureself_id);
-          this.props.history.push("/p/" + response.data.new_pictureself_id);
-        })
-        .catch(error => {
-          this.setState({ errorOnPost: "An Error Occured, Please Try Again" });
-          setTimeout(() => {
-            this.setState({ errorOnPost: "" });
-          }, 9000);
-        });
-    } else {
-      this.setState({ errorOnPost: "At Least 1 Variant Should Be Provided" });
-      setTimeout(() => {
-        this.setState({ errorOnPost: "" });
-      }, 9000);
+  /*
+  // draft
+  editVariantsDraft = (pictureselfId, editedVariantIds, variantFiles) => {
+    const CHUNK_SIZE = 15;
+    const numberOfChunks = ~~(editedVariantIds.length / CHUNK_SIZE);
+    const remainder = editedVariantIds.length % CHUNK_SIZE;
+
+    // "+ 1" to process remainder
+    for (let i = 0; i < numberOfChunks + 1; ++i) {
+      // getting chunk of files
+      let editedVariantIdsChunk =
+        i < numberOfChunks
+          ? editedVariantIds.slice(i * numberOfChunks, (i + 1) * numberOfChunks)
+          : editedVariantIds.slice(0, remainder);
+      let editedVariantFilesChunk = {};
+      for (let editedVariantId of editedVariantIdsChunk)
+        editedVariantFilesChunk[editedVariantId] =
+          variantFiles[editedVariantId];
+
+      // uploading files
+      this.editVariantsApi(pictureselfId, editedVariantFilesChunk).then(
+        response => {
+          this.setState({
+            nFilesUploaded:
+              this.state.nFilesUploaded +
+              (i == numberOfChunks ? remainder : numberOfChunks)
+          });
+        }
+      );
     }
-    //const new_pictureself_id = this.createPictureselfApi(newPictureself);
-    //this.setState({ pictureself_id: new_pictureself_id });
+  };
+  */
+
+  // to do: consider merging with editVariants
+  createVariants = (createdVariantIds, variantFiles) => {
+    const CHUNK_SIZE = 5;
+    const nChunks = ~~(createdVariantIds.length / CHUNK_SIZE);
+    var sequence = Promise.resolve();
+    const remainder = createdVariantIds.length % CHUNK_SIZE;
+    // "+ 1" to process remainder
+    for (let i = 0; i < nChunks + 1; ++i) {
+      // getting chunk of files
+      const iChunkSize = i < nChunks ? CHUNK_SIZE : remainder;
+      let createdVariantIdsChunk = createdVariantIds.slice(
+        i * CHUNK_SIZE,
+        i * CHUNK_SIZE + iChunkSize
+      );
+      let createdVariantFilesChunk = {};
+      for (let createdVariantId of createdVariantIdsChunk) {
+        createdVariantFilesChunk[createdVariantId] =
+          variantFiles[createdVariantId];
+      }
+
+      // uploading files
+      sequence = sequence.then(() =>
+        this.createVariantsChunk(
+          createdVariantIdsChunk,
+          createdVariantFilesChunk
+        ).then(() => {
+          this.setState(state => ({
+            legitCreatedVariantIds: state.legitCreatedVariantIds.concat(
+              state.legitCreatedVariantIdsChunk
+            ),
+            nFilesUploaded:
+              state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE)
+          }));
+        })
+      );
+    }
+    return sequence;
+  };
+
+  createVariantsChunk = (createdVariantIds, variantFiles) => {
+    var sequence = Promise.resolve();
+    this.setState({ legitCreatedVariantIdsChunk: [] }, () => {
+      for (let i = 0; i < createdVariantIds.length; ++i) {
+        sequence = sequence.then(() =>
+          this.createVariantApi(variantFiles[createdVariantIds[i]]).then(
+            response => {
+              this.setState(state => ({
+                legitCreatedVariantIdsChunk: [
+                  ...state.legitCreatedVariantIdsChunk,
+                  response.data["new_variant_id"]
+                ]
+              }));
+            }
+          )
+        );
+      }
+    });
+    return sequence;
+  };
+
+  editVariants = (editedVariantIds, variantFiles) => {
+    const CHUNK_SIZE = 5;
+    const nChunks = ~~(editedVariantIds.length / CHUNK_SIZE);
+    const remainder = editedVariantIds.length % CHUNK_SIZE;
+    var sequence = Promise.resolve();
+
+    // "+ 1" to process remainder
+    for (let i = 0; i < nChunks + 1; ++i) {
+      // getting chunk of files
+      const iChunkSize = i < nChunks ? CHUNK_SIZE : remainder;
+      let editedVariantIdsChunk = editedVariantIds.slice(
+        i * CHUNK_SIZE,
+        i * CHUNK_SIZE + iChunkSize
+      );
+      let editedVariantFilesChunk = {};
+      for (let editedVariantId of editedVariantIdsChunk)
+        editedVariantFilesChunk[editedVariantId] =
+          variantFiles[editedVariantId];
+
+      // uploading files
+      sequence = sequence.then(() =>
+        this.editVariantsChunk(
+          editedVariantIdsChunk,
+          editedVariantFilesChunk
+        ).then(() => {
+          this.setState(state => ({
+            nFilesUploaded:
+              state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE)
+          }));
+        })
+      );
+    }
+    return sequence;
+  };
+
+  editVariantsChunk = (editedVariantIds, variantFiles) => {
+    var sequence = Promise.resolve();
+    for (let i = 0; i < editedVariantIds.length; ++i) {
+      sequence = sequence.then(() =>
+        this.editVariantApi(
+          editedVariantIds[i],
+          variantFiles[editedVariantIds[i]]
+        )
+      );
+    }
+    return sequence;
+  };
+
+  /*
+  // draft
+  createVariantsDraft = (createdVariantIds, variantFiles) => {
+    const CHUNK_SIZE = 15;
+    const numberOfChunks = ~~(createdVariantIds.length / CHUNK_SIZE);
+    const remainder = createdVariantIds.length % CHUNK_SIZE;
+
+    let legitCreatedVariantIds = {};
+
+    // "+ 1" to process remainder
+    for (let i = 0; i < numberOfChunks + 1; ++i) {
+      // getting chunk of files
+      let createdVariantIdsChunk =
+        i < numberOfChunks
+          ? createdVariantIds.slice(
+              i * numberOfChunks,
+              (i + 1) * numberOfChunks
+            )
+          : createdVariantIds.slice(0, remainder);
+      let createdVariantFilesChunk = {};
+      for (let createdVariantId of createdVariantIdsChunk)
+        createdVariantFilesChunk[createdVariantId] =
+          variantFiles[createdVariantId];
+
+      // uploading files
+      this.createVariantsApi(createdVariantFilesChunk).then(response => {
+        Object.assign(
+          legitCreatedVariantIds,
+          JSON.parse(response.data.legit_created_variant_ids)
+        );
+        this.setState(state => {
+          return {
+            nFilesUploaded:
+              state.nFilesUploaded +
+              (i == numberOfChunks ? remainder : numberOfChunks)
+          };
+        });
+      });
+    }
+    return legitCreatedVariantIds;
+  };
+  */
+
+  // to do: rename "save" instead of "post"
+  //        state variable also
+  showErrorOnPost = message => {
+    const RETENTION_TIME = 9000;
+    this.setState({ errorOnPost: message });
+    setTimeout(() => {
+      this.setState({ errorOnPost: "" });
+    }, RETENTION_TIME);
   };
 
   editPictureself = () => {
     if (this.atLeastOneVariant()) {
-      const editedPictureself = this.getNewPictureself();
-      const pictureself = this.state.pictureself_id;
-      this.editPictureselfApi(pictureself, editedPictureself)
+      this.setState({
+        isUploading: true
+      });
+      let newInfo = this.getNewInfo();
+      let newFiles = this.getNewFiles();
+      const pictureselfId = this.state.pictureself_id;
+
+      this.editVariants(newFiles.edited_variant_ids, newFiles.variant_files)
         .then(response => {
-          const idRedirectTo =
-            this.state.pictureself_id == "0"
-              ? response.data.new_pictureself_id
-              : this.state.pictureself_id;
-          this.props.history.push("/p/" + idRedirectTo);
+          this.createVariants(
+            newFiles.created_variant_ids,
+            newFiles.variant_files
+          ).then(response => {
+            const legitCreatedVariantIds = this.state.legitCreatedVariantIds;
+
+            newInfo["created_variant_ids"] = JSON.stringify(
+              legitCreatedVariantIds
+            );
+            for (let i = 0; i < legitCreatedVariantIds.length; ++i) {
+              newInfo["variant_order"] = newInfo["variant_order"].replace(
+                newFiles.created_variant_ids[i].toString(),
+                legitCreatedVariantIds[i].toString()
+              );
+            }
+            this.editPictureselfInfoApi(pictureselfId, newInfo).then(
+              response => {
+                const idRedirectTo =
+                  this.state.pictureself_id == "0"
+                    ? response.data.new_pictureself_id
+                    : this.state.pictureself_id;
+                this.props.history.push("/p/" + idRedirectTo);
+              }
+            );
+          });
         })
         .catch(error => {
-          this.setState({ errorOnPost: "An Error Occured, Please Try Again" });
-          setTimeout(() => {
-            this.setState({ errorOnPost: "" });
-          }, 9000);
+          this.showPostError("An Error Occured, Please Try Again");
+          this.setState({
+            nFilesUploaded: 0,
+            legitCreatedVariantIds: [],
+            isUploading: false
+          });
         });
-    } else {
-      this.setState({ errorOnPost: "At Least 1 Variant Should Be Provided" });
-      setTimeout(() => {
-        this.setState({ errorOnPost: "" });
-      }, 9000);
-    }
+    } else this.showErrorOnPost("At Least 1 Variant Should Be Provided");
   };
 
   handleDeletePictureself = () => {
@@ -1104,7 +1360,26 @@ export default class EditPictureself extends Component {
         <div>{editfeatures}</div>
         <br />
         <br />
-        <p class="error-on-post">{this.state.errorOnPost}</p>
+        <p
+          className={
+            "info-on-save" + (this.state.errorOnPost != "" ? " error" : "")
+          }
+        >
+          {this.state.errorOnPost != ""
+            ? this.state.errorOnPost
+            : this.state.isUploading
+            ? "Uploading... " +
+              Math.max(
+                ~~(
+                  (this.state.nFilesUploaded /
+                    Object.keys(this.state.variant_files).length) *
+                  100
+                ) - 1,
+                1
+              ).toString() +
+              "%"
+            : ""}
+        </p>
         <Button
           floated="left"
           size="large"
@@ -1147,6 +1422,7 @@ export default class EditPictureself extends Component {
             "margin-right": "35px",
             "margin-bottom": "35px"
           }}
+          loading={this.state.isUploading}
           onClick={
             pictureself === 0
               ? () => this.createPictureself()

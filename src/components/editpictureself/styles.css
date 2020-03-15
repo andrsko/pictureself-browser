@@ -49,8 +49,11 @@
   right: 0px;
   top: 45px;
 }
-p.error-on-post {
-  color: rgb(200, 50, 50);
-  text-align: center;
+p.info-on-save {
+  text-align: right;
   font-size: 18px;
+  margin-right: 35px;
+}
+p.info-on-save.error {
+  color: rgb(200, 50, 50);
 }
