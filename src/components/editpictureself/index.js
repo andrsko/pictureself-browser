@@ -1146,14 +1146,13 @@ export default class EditPictureself extends Component {
             newFiles.variant_files
           ).then(response => {
             const legitCreatedVariantIds = this.state.legitCreatedVariantIds;
-
             newInfo["created_variant_ids"] = JSON.stringify(
               legitCreatedVariantIds
             );
             for (let i = 0; i < legitCreatedVariantIds.length; ++i) {
               newInfo["variant_order"] = newInfo["variant_order"].replace(
-                newFiles.created_variant_ids[i].toString(),
-                legitCreatedVariantIds[i].toString()
+                '"' + newFiles.created_variant_ids[i].toString() + '"',
+                '"' + legitCreatedVariantIds[i].toString() + '"'
               );
             }
             this.editPictureselfInfoApi(pictureselfId, newInfo).then(
