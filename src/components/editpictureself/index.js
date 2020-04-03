@@ -990,22 +990,23 @@ export default class EditPictureself extends Component {
         createdVariantFilesChunk[createdVariantId] =
           variantFiles[createdVariantId];
       }
-
+      // ?!!!!??!!??!?!???! p.then(then).then(then)
       // uploading files
       sequence = sequence.then(() =>
         this.createVariantsChunk(
           createdVariantIdsChunk,
           createdVariantFilesChunk
-        ).then(() => {
-          this.setState(state => ({
-            legitCreatedVariantIds: state.legitCreatedVariantIds.concat(
-              state.legitCreatedVariantIdsChunk
-            ),
-            nFilesUploaded:
-              state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE)
-          }));
-        })
+        )
       );
+      sequence = sequence.then(() => {
+        this.setState(state => ({
+          legitCreatedVariantIds: state.legitCreatedVariantIds.concat(
+            state.legitCreatedVariantIdsChunk
+          ),
+          nFilesUploaded:
+            state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE)
+        }));
+      });
     }
     return sequence;
   };
@@ -1015,17 +1016,16 @@ export default class EditPictureself extends Component {
     this.setState({ legitCreatedVariantIdsChunk: [] }, () => {
       for (let i = 0; i < createdVariantIds.length; ++i) {
         sequence = sequence.then(() =>
-          this.createVariantApi(variantFiles[createdVariantIds[i]]).then(
-            response => {
-              this.setState(state => ({
-                legitCreatedVariantIdsChunk: [
-                  ...state.legitCreatedVariantIdsChunk,
-                  response.data["new_variant_id"]
-                ]
-              }));
-            }
-          )
+          this.createVariantApi(variantFiles[createdVariantIds[i]])
         );
+        sequence = sequence.then(response => {
+          this.setState(state => ({
+            legitCreatedVariantIdsChunk: [
+              ...state.legitCreatedVariantIdsChunk,
+              response.data["new_variant_id"]
+            ]
+          }));
+        });
       }
     });
     return sequence;
@@ -1052,16 +1052,14 @@ export default class EditPictureself extends Component {
 
       // uploading files
       sequence = sequence.then(() =>
-        this.editVariantsChunk(
-          editedVariantIdsChunk,
-          editedVariantFilesChunk
-        ).then(() => {
-          this.setState(state => ({
-            nFilesUploaded:
-              state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE)
-          }));
-        })
+        this.editVariantsChunk(editedVariantIdsChunk, editedVariantFilesChunk)
       );
+      sequence = sequence.then(() => {
+        this.setState(state => ({
+          nFilesUploaded:
+            state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE)
+        }));
+      });
     }
     return sequence;
   };

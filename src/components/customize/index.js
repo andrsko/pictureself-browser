@@ -12,6 +12,7 @@ import React, { Component } from "react";
 import axios from "axios";
 import { getConfig } from "../../utils/config";
 import { apiErrorHandler } from "../../utils/errorhandler";
+import { imageComposer } from "../../utils/imagecomposer";
 import { Link } from "react-router-dom";
 import Loader from "../loader";
 import StackGrid from "react-stack-grid";
@@ -26,28 +27,111 @@ export default class Customize extends Component {
     this.handleActiveOptionChange = this.handleActiveOptionChange.bind(this);
 
     this.state = {
-      feature_ids: [],
-      feature_titles: [],
+      // to do: consider replacing "_ids" and "_titles" with "features" - array of objects
+      featureIds: [],
+      featureTitles: [],
       activeFeatureId: 0,
-      nOptions: 0, //pictureself options specific to active feature
-      encodings: [],
-      alts: [],
-      widths_heights: [],
-      encodingsChunk: [],
-      altsChunk: [],
-      widths_heightsChunk: [],
       activeOptionIndex: -1, // int; -1 = not customized yet: silver border around first option
-      ext: "",
-      isLoading: true
+      customizationVariantImageUrls: [],
+      customizationVariantAlts: [],
+      featureVariantImageUrls: [],
+      featureVariantAlts: [],
+      canvasDataURLs: [],
+      widths: [],
+      heights: [],
+      nImagesComposed: 0
     };
   }
 
   componentDidMount() {
+    const pictureselfId = this.props.id;
     // includes this.handleActiveFeatureChange(firstFeatureId)
     // that includes this.fetchPictureselfOptions(firstFeatureId)
     // as callback in asynchronous setState()
-    this.fetchFeatures();
+    this.fetchFeatures(pictureselfId);
   }
+
+  // to do: process also features present multiple times (one id several indices)
+  // to do: make version of image composer for this component
+  //          create image elements for under and over layers just once
+  composeImages = () => {
+    const {
+      customizationVariantImageUrls,
+      featureVariantImageUrls
+    } = this.state;
+
+    const activeFeatureIndex = this.state.featureIds.indexOf(
+      this.state.activeFeatureId
+    );
+    const underLayerImageUrls = customizationVariantImageUrls.slice(
+      0,
+      activeFeatureIndex
+    );
+    const overLayerImageUrls = customizationVariantImageUrls.slice(
+      activeFeatureIndex + 1
+    );
+
+    let layerPromises = [];
+
+    let underLayerCanvasDataURL = "";
+    if (underLayerImageUrls.length > 0) {
+      var underLayerPromise = imageComposer(underLayerImageUrls).then(
+        composedImage => {
+          underLayerCanvasDataURL = composedImage.url;
+        }
+      );
+      layerPromises.push(underLayerPromise);
+    }
+
+    let overLayerCanvasDataURL = "";
+    if (overLayerImageUrls.length > 0) {
+      var overLayerPromise = imageComposer(overLayerImageUrls).then(
+        composedImage => {
+          overLayerCanvasDataURL = composedImage.url;
+        }
+      );
+      layerPromises.push(overLayerPromise);
+    }
+
+    Promise.all(layerPromises).then(() => {
+      let imageUrls = [];
+      let middleLayerIndex = 0;
+      if (underLayerCanvasDataURL !== "") {
+        imageUrls.push(underLayerCanvasDataURL);
+        middleLayerIndex = 1;
+      }
+      if (overLayerCanvasDataURL !== "") {
+        imageUrls.push("");
+        imageUrls.push(overLayerCanvasDataURL);
+      }
+
+      for (let i = 0; i < featureVariantImageUrls.length; ++i) {
+        imageUrls[middleLayerIndex] = featureVariantImageUrls[i];
+        imageComposer(imageUrls)
+          .then(composedImage => {
+            this.setState(state => {
+              let newCanvasDataURLs = [...state.canvasDataURLs];
+              let newWidths = [...state.widths];
+              let newHeights = [...state.heights];
+
+              newCanvasDataURLs[i] = composedImage.url;
+              newWidths[i] = composedImage.width;
+              newHeights[i] = composedImage.height;
+
+              return {
+                canvasDataURLs: newCanvasDataURLs,
+                widths: newWidths,
+                heights: newHeights,
+                imagesComposed: state.imagesComposed + 1
+              };
+            });
+          })
+          .catch(error => {
+            alert(error);
+          });
+      }
+    });
+  };
 
   fetchPictureselfFeaturesApi = id => {
     return axios.get(API_URL + "features/p/" + id, getConfig());
@@ -66,162 +150,110 @@ export default class Customize extends Component {
     }
   };
 
-  fetchFeatures = () => {
+  fetchFeatures = pictureselfId => {
     this.fetchFeaturesApiPictureselfChannelSwitch()
       .then(response => {
-        this.setState({
-          feature_ids: response.data["feature_ids"],
-          feature_titles: response.data["feature_titles"]
-        });
-        const firstFeatureId = response.data["feature_ids"][0];
-        this.handleActiveFeatureChange(firstFeatureId);
+        this.setState(
+          {
+            featureIds: response.data["feature_ids"],
+            featureTitles: response.data["feature_titles"]
+          },
+          () => {
+            this.fetchPictureselfCustomizationVariants(pictureselfId);
+
+            //this.fetchPictureselfFeatureVariants(pictureselfId, featureId);
+          }
+        );
+        //const firstFeatureId = response.data["feature_ids"][0];
+        //this.handleActiveFeatureChange(firstFeatureId);
       })
       .catch(error => {
         const errorMessage = apiErrorHandler(error);
-        alert(error);
         // to do
         alert(errorMessage);
       });
   };
 
-  fetchPictureselfOptionsInfoApi = (pictureselfId, featureId) => {
+  fetchPictureselfCustomizationPositionApi = featureId => {
     return axios.get(
-      API_URL + "p/" + pictureselfId + "/options-info/" + featureId + "/",
+      API_URL + "customizations/" + featureId + "/",
       getConfig()
     );
   };
 
-  /*fetchPictureselfOptionEncodingsChunkApi = (
-    pictureselfId,
-    featureId,
-    startPosition,
-    nOptions
-  ) => {
-    return axios.get(
-      API_URL +
-        "p/" +
-        pictureselfId +
-        "/options-chunk/" +
-        featureId +
-        "/" +
-        startPosition +
-        "/" +
-        nOptions +
-        "/",
-      getConfig()
-    );
-  };*/
-  fetchPictureselfOptionEncodingApi = (
-    pictureselfId,
-    featureId,
-    variantIndex
-  ) => {
-    return axios.get(
-      API_URL +
-        "p/" +
-        pictureselfId +
-        "/option/" +
-        featureId +
-        "/" +
-        variantIndex +
-        "/",
-      getConfig()
-    );
-  };
-
-  fetchPictureselfOptionEncodings = (pictureselfId, featureId) => {
-    const CHUNK_SIZE = 10;
-    const nChunks = ~~(this.state.nOptions / CHUNK_SIZE);
-    const remainder = this.state.nOptions % CHUNK_SIZE;
-    var sequence = Promise.resolve();
-    // "+ 1" to process remainder
-    for (let i = 0; i < nChunks + 1; ++i) {
-      const iChunkSize = i < nChunks ? CHUNK_SIZE : remainder;
-      sequence = sequence.then(() =>
-        this.fetchPictureselfOptionEncodingsChunk(
-          pictureselfId,
-          featureId,
-          i * CHUNK_SIZE,
-          iChunkSize
-        ).then(() => {
-          this.setState(state => ({
-            encodings: state.encodings.concat(state.encodingsChunk),
-            alts: state.alts.concat(state.altsChunk),
-            widths_heights: state.widths_heights.concat(
-              state.widths_heightsChunk
-            ),
-            isLoading: i != nChunks
-          }));
-        })
-      );
-    }
-    return sequence;
-  };
-
-  fetchPictureselfOptionEncodingsChunk = (
-    pictureselfId,
-    featureId,
-    startPosition,
-    nOptions
-  ) => {
-    var sequence = Promise.resolve();
-    this.setState(
-      { encodingsChunk: [], altsChunk: [], widths_heightsChunk: [] },
-      () => {
-        for (let i = 0; i < nOptions; ++i) {
-          sequence = sequence.then(() =>
-            this.fetchPictureselfOptionEncodingApi(
-              pictureselfId,
-              featureId,
-              startPosition + i
-            ).then(response => {
-              this.setState(state => ({
-                encodingsChunk: [
-                  ...state.encodingsChunk,
-                  response.data["encoding"]
-                ],
-                altsChunk: [...state.altsChunk, response.data["alt"]],
-                widths_heightsChunk: [
-                  ...state.widths_heightsChunk,
-                  response.data["width_height"]
-                ]
-              }));
-            })
-          );
-        }
-      }
-    );
-
-    return sequence;
-  };
-
-  fetchPictureselfOptions = featureId => {
-    // can be pictureself or channel
-    const { type } = this.props;
-    const pictureselfId = type == "pictureself" ? this.props.id : "0";
-
-    this.fetchPictureselfOptionsInfoApi(pictureselfId, featureId)
+  fetchPictureselfCustomizationVariants = pictureselfId => {
+    this.fetchPictureselfCustomizationVariantsApi(pictureselfId)
       .then(response => {
         this.setState(
           {
-            nOptions: response.data["number_of_options"],
-            activeOptionIndex: response.data["active_option_index"],
-            ext: response.data["ext"]
+            customizationVariantImageUrls: response.data["variant_image_urls"],
+            customizationVariantAlts: response.data["variant_original_names"]
           },
           () => {
-            this.fetchPictureselfOptionEncodings(pictureselfId, featureId);
+            this.handleActiveFeatureChange(this.state.featureIds[0]);
           }
         );
       })
       .catch(error => {
         const errorMessage = apiErrorHandler(error);
-        //alert(error);
         // to do
         alert(errorMessage);
       });
   };
 
-  postNewPosition = (feature_id, position) => {
+  fetchPictureselfCustomizationVariantsApi = id => {
+    return axios.get(
+      API_URL + "p/" + id + "/customization-variants/",
+      getConfig()
+    );
+  };
+
+  fetchPictureselfFeatureVariants = (pictureselfId, featureId) => {
+    this.fetchPictureselfFeatureVariantsApi(pictureselfId, featureId)
+      .then(response => {
+        this.setState(
+          {
+            featureVariantImageUrls: response.data["variant_image_urls"],
+            featureVariantAlts: response.data["variant_original_names"],
+            nImagesComposed: 0,
+            canvasDataURLs: [],
+            widths: [],
+            heights: []
+          },
+          () => {
+            this.composeImages();
+          }
+        );
+      })
+      .catch(error => {
+        const errorMessage = apiErrorHandler(error);
+        // to do
+        alert(errorMessage);
+      });
+  };
+
+  fetchPictureselfFeatureVariantsApi = (pictureselfId, featureId) => {
+    return axios.get(
+      API_URL + "p/" + pictureselfId + "/feature-variants/" + featureId + "/",
+      getConfig()
+    );
+  };
+
+  fetchPictureselfCustomizationPosition = featureId => {
+    this.fetchPictureselfCustomizationPositionApi(featureId)
+      .then(response => {
+        this.setState({
+          activeOptionIndex: response.data["customization_position"]
+        });
+      })
+      .catch(error => {
+        const errorMessage = apiErrorHandler(error);
+        // to do
+        alert(errorMessage);
+      });
+  };
+
+  editCustomizationPositionApi = (feature_id, position) => {
     return axios.post(
       API_URL + "customizations/" + feature_id + "/edit/",
       { position: position },
@@ -230,41 +262,78 @@ export default class Customize extends Component {
   };
 
   handleActiveFeatureChange = new_active_feature_id => {
+    const pictureselfId = this.props.id;
     this.setState(
       {
-        activeFeatureId: new_active_feature_id,
-        encodings: [],
-        alts: [],
-        widths_heights: [],
-        isLoading: true
+        activeFeatureId: new_active_feature_id
       },
       () => {
-        this.fetchPictureselfOptions(new_active_feature_id);
+        this.fetchPictureselfFeatureVariants(
+          pictureselfId,
+          new_active_feature_id
+        );
+        this.fetchPictureselfCustomizationPosition(new_active_feature_id);
       }
     );
   };
 
-  handleActiveOptionChange = new_active_option_index => {
-    this.setState({ activeOptionIndex: new_active_option_index });
-    this.postNewPosition(this.state.activeFeatureId, new_active_option_index);
+  handleActiveOptionChange = newActiveOptionIndex => {
+    this.setState({ activeOptionIndex: newActiveOptionIndex });
+    this.editCustomizationPositionApi(
+      this.state.activeFeatureId,
+      newActiveOptionIndex
+    )
+      .then(response => {
+        const {
+          customizationVariantImageUrls,
+          featureVariantImageUrls,
+          featureIds,
+          activeFeatureId
+        } = this.state;
+        let newCustomizationVariantImageUrls = [
+          ...customizationVariantImageUrls
+        ];
+        newCustomizationVariantImageUrls[featureIds.indexOf(activeFeatureId)] =
+          featureVariantImageUrls[newActiveOptionIndex];
+        this.setState({
+          customizationVariantImageUrls: newCustomizationVariantImageUrls
+        });
+      })
+      .catch(error => {
+        const errorMessage = apiErrorHandler(error);
+        // to do
+        alert(errorMessage);
+      });
   };
 
   render() {
     const { isAuthenticated } = this.props;
+
+    const {
+      activeOptionIndex,
+      widths,
+      heights,
+      canvasDataURLs,
+      featureVariantAlts,
+      nImagesComposed
+    } = this.state;
     const COLUMN_WIDTH = 200;
     const GUTTER_WIDTH = 10;
     const GUTTER_HEIGHT = 10;
     const ACTIVE_OPTION_BORDER_WIDTH = 4;
+
     let box_shadow_heights = [];
-    const { encodings, widths_heights, isLoading } = this.state;
-    let i;
-    for (i = 0; i < widths_heights.length; i++) {
-      let height =
-        widths_heights[i][0] > COLUMN_WIDTH
-          ? widths_heights[i][1] * (COLUMN_WIDTH / widths_heights[i][0])
-          : widths_heights[i][1] + (COLUMN_WIDTH - widths_heights[i][0]);
-      box_shadow_heights.push(height);
+
+    for (let i = 0; i < widths.length; i++) {
+      if (widths[i] !== undefined) {
+        let height =
+          widths[i] > COLUMN_WIDTH
+            ? heights[i] * (COLUMN_WIDTH / widths[i])
+            : heights[i] + (COLUMN_WIDTH - widths[i]);
+        box_shadow_heights[i] = height;
+      }
     }
+
     /*
     // ternary operator with accessing element of array from props which data is fetched doesnt work in map
     let activeOptionCardImageWidths;
@@ -279,13 +348,17 @@ export default class Customize extends Component {
           ? this.props.columnWidth - pictureself.width_height[0]
           : 0;
     }
-*/
-    const featureMenu = this.state.feature_ids.map((feature_id, index) => (
+    */
+    const featureMenu = this.state.featureIds.map((feature_id, index) => (
       <Button
         basic
         key={feature_id}
         onClick={() => this.handleActiveFeatureChange(feature_id)}
-        content={this.state.feature_titles[index]}
+        content={
+          this.state.featureTitles[index] === ""
+            ? "*"
+            : this.state.featureTitles[index]
+        }
         active={this.state.activeFeatureId == feature_id}
         size="large"
         style={{
@@ -296,64 +369,74 @@ export default class Customize extends Component {
         compact
       />
     ));
-    const { activeOptionIndex } = this.state;
 
     // ? replace border with rectangle independent from image to
     // ? properly process images with width smaller than columnWidth
-    const optionCards = encodings.map((encoding, index) => (
-      <div
-        key={index.toString()}
-        onClick={() => this.handleActiveOptionChange(index)}
-        style={{
-          width: COLUMN_WIDTH + "px",
-          height: box_shadow_heights[index].toString() + "px",
-          "box-shadow":
-            "0px " +
-            box_shadow_heights[index].toString() +
-            "px inset rgba(175,175,175,0.075)",
-          border:
-            index == activeOptionIndex
-              ? "5px solid DodgerBlue"
-              : index == 0
-              ? activeOptionIndex == -1
-                ? "5px solid Silver"
-                : ""
-              : ""
-        }}
-      >
-        <img
-          src={`data:image/${this.state["ext"]};base64,${encoding}`}
-          alt={this.state["alts"][index]}
-          style={{
-            "max-width": "100%",
-            width:
-              index == activeOptionIndex
-                ? widths_heights[index][0] >
-                  COLUMN_WIDTH - 2 * ACTIVE_OPTION_BORDER_WIDTH
-                  ? (COLUMN_WIDTH - 2 * ACTIVE_OPTION_BORDER_WIDTH).toString()
+    let optionCards = [];
+    for (let index = 0; index < canvasDataURLs.length; ++index) {
+      const canvasDataURL = canvasDataURLs[index];
+      if (canvasDataURL !== undefined) {
+        optionCards.push(
+          <div
+            key={index.toString()}
+            onClick={() => this.handleActiveOptionChange(index)}
+            style={{
+              width: COLUMN_WIDTH + "px",
+              height: box_shadow_heights[index].toString() + "px",
+              "box-shadow":
+                "0px " +
+                box_shadow_heights[index].toString() +
+                "px inset rgba(175,175,175,0.075)",
+              border:
+                index == activeOptionIndex
+                  ? "5px solid DodgerBlue"
+                  : index == 0
+                  ? activeOptionIndex == -1
+                    ? "5px solid Silver"
+                    : ""
                   : ""
-                : "",
-            height: "auto",
-            margin:
-              index == activeOptionIndex ||
-              (index == 0 && activeOptionIndex == -1)
-                ? (COLUMN_WIDTH - 2 * ACTIVE_OPTION_BORDER_WIDTH >
-                  widths_heights[index][0]
-                    ? (COLUMN_WIDTH -
-                        2 * ACTIVE_OPTION_BORDER_WIDTH -
-                        widths_heights[index][0]) /
-                      2
-                    : "0") + "px"
-                : (COLUMN_WIDTH > widths_heights[index][0]
-                    ? (COLUMN_WIDTH - widths_heights[index][0]) / 2
-                    : "0") + "px",
+            }}
+          >
+            <img
+              alt={featureVariantAlts[index]}
+              src={canvasDataURL}
+              style={{
+                "max-width": "100%",
+                width:
+                  index == activeOptionIndex
+                    ? widths[index] >
+                      COLUMN_WIDTH - 2 * ACTIVE_OPTION_BORDER_WIDTH
+                      ? (
+                          COLUMN_WIDTH -
+                          2 * ACTIVE_OPTION_BORDER_WIDTH
+                        ).toString()
+                      : ""
+                    : "",
+                height: "auto",
+                margin:
+                  index == activeOptionIndex ||
+                  (index == 0 && activeOptionIndex == -1)
+                    ? (COLUMN_WIDTH - 2 * ACTIVE_OPTION_BORDER_WIDTH >
+                      widths[index]
+                        ? (COLUMN_WIDTH -
+                            2 * ACTIVE_OPTION_BORDER_WIDTH -
+                            widths[index]) /
+                          2
+                        : "0") + "px"
+                    : (COLUMN_WIDTH > widths[index]
+                        ? (COLUMN_WIDTH - widths[index]) / 2
+                        : "0") + "px",
 
-            "z-index": "-1",
-            position: "relative"
-          }}
-        />
-      </div>
-    ));
+                "z-index": "-1",
+                position: "relative"
+              }}
+            />
+          </div>
+        );
+      }
+    }
+
+    const isLoading = nImagesComposed === featureVariantAlts.length;
 
     if (isAuthenticated) {
       return (

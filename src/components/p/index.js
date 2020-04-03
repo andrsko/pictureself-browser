@@ -9,6 +9,7 @@ import store from "../../store";
 import Linkify from "linkifyjs/react";
 import Loader from "../loader";
 import { API_URL } from "../../api/constants";
+import { imageComposer } from "../../utils/imagecomposer";
 
 export default class P extends Component {
   constructor(props) {
@@ -19,9 +20,6 @@ export default class P extends Component {
       title: "",
       comment: "",
       date: "",
-      encoding: "",
-      ext: "",
-      width_height: [],
       username: "", //author's
       name: "", //author's
       avatar: "",
@@ -30,6 +28,9 @@ export default class P extends Component {
       numberOfLikes: 0,
       likePopupIsVisible: true,
       buttonsDivHeight: 0,
+      canvasDataURL: "",
+      width: 0,
+      height: 0,
       isLoading: true
     };
   }
@@ -45,16 +46,13 @@ export default class P extends Component {
     const pictureself = this.state.id;
     this.fetchPictureselfDisplayApi(pictureself)
       .then(response => {
-        //          avatar: response.data["avatar"],
         this.setState(
           {
             title: response.data["title"],
-            encoding: response.data["encoding"],
+            imageUrls: response.data["image_urls"],
             comment: response.data["description"],
-            ext: response.data["ext"],
             username: response.data["username"],
             name: response.data["name"],
-            width_height: response.data["width_height"],
             isCustomizable: response.data["is_customizable"],
             isLiked: response.data["is_liked"],
             numberOfLikes: response.data["number_of_likes"],
@@ -62,16 +60,30 @@ export default class P extends Component {
             avatar: response.data["avatar"]
           },
           () => {
-            this.setState({ isLoading: false }, () => {
-              if (
-                this.props.location.pathname ==
-                "/p/" + this.props.match.params.pictureself + "/like"
-              ) {
-                this.toggleLike();
-              }
-              const buttonsDivHeight = this.buttonsDiv.clientHeight;
-              this.setState({ buttonsDivHeight });
-            });
+            imageComposer(this.state.imageUrls)
+              .then(composedImage => {
+                this.setState(
+                  {
+                    width: composedImage.width,
+                    height: composedImage.height,
+                    canvasDataURL: composedImage.url,
+                    isLoading: false
+                  },
+                  () => {
+                    if (
+                      this.props.location.pathname ==
+                      "/p/" + this.props.match.params.pictureself + "/like"
+                    ) {
+                      this.toggleLike();
+                    }
+                    const buttonsDivHeight = this.buttonsDiv.clientHeight;
+                    this.setState({ buttonsDivHeight });
+                  }
+                );
+              })
+              .catch(error => {
+                alert(error);
+              });
           }
         );
       })
@@ -126,17 +138,14 @@ export default class P extends Component {
         </div>
       );
     } else {
+      const { width, height, canvasDataURL } = this.state;
       const MIN_WIDTH = 300;
       const MIN_HEIGHT = 300;
       const MENU_WIDTH = 250; //value used also in css file
       const imgPaddingLeftRight =
-        this.state.width_height[0] < MIN_WIDTH
-          ? (MIN_WIDTH - this.state.width_height[0]) / 2
-          : 0;
+        width < MIN_WIDTH ? (MIN_WIDTH - width) / 2 : 0;
       const imgPaddingTopBottom =
-        this.state.width_height[1] < MIN_HEIGHT
-          ? (MIN_HEIGHT - this.state.width_height[1]) / 2
-          : 0;
+        height < MIN_HEIGHT ? (MIN_HEIGHT - height) / 2 : 0;
       const avatarImageSrc =
         this.state.avatar == ""
           ? "https://afcm.ca/wp-content/uploads/2018/06/no-photo.png"
@@ -157,10 +166,7 @@ export default class P extends Component {
         <div />
       );
       //document.body.style = "background: rgb(235, 235, 235);";
-      const menuDivHeight =
-        this.state.width_height[1] < MIN_HEIGHT
-          ? MIN_HEIGHT
-          : this.state.width_height[1];
+      const menuDivHeight = height < MIN_HEIGHT ? MIN_HEIGHT : height;
       const infoDivHeight = menuDivHeight - this.state.buttonsDivHeight;
       const { date } = this.state;
       const months = [
@@ -203,6 +209,8 @@ export default class P extends Component {
             <div id="p-inner">
               {editButton}
               <img
+                alt={this.state.title}
+                src={canvasDataURL}
                 style={{
                   "padding-left": imgPaddingLeftRight,
                   "padding-right": imgPaddingLeftRight,
@@ -210,10 +218,6 @@ export default class P extends Component {
                   "padding-bottom": imgPaddingTopBottom,
                   "border-right": "1px solid rgb(235, 235, 235)"
                 }}
-                src={`data:image/${this.state.ext};base64,${
-                  this.state.encoding
-                }`}
-                alt={this.state.title}
               />
               <div
                 id="p-menu"
@@ -246,10 +250,8 @@ export default class P extends Component {
                       verticalOffset={3}
                       trigger={
                         <a
-                          href={`data:image/${this.state.ext};base64,${
-                            this.state.encoding
-                          }`}
-                          download={`pictureself.${this.state.ext}`}
+                          href={canvasDataURL}
+                          download={`${this.state.title}.png`}
                         >
                           <Button
                             style={{
