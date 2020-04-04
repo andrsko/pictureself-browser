@@ -6,7 +6,7 @@ import {
   Message,
   Icon,
   Modal,
-  Header
+  Header,
 } from "semantic-ui-react";
 import React, { Component } from "react";
 import axios from "axios";
@@ -28,8 +28,9 @@ export default class Customize extends Component {
 
     this.state = {
       // to do: consider replacing "_ids" and "_titles" with "features" - array of objects
-      featureIds: [],
+      featureIds: [], //features that have more than 1 variant
       featureTitles: [],
+      allFeatureIds: [],
       activeFeatureId: 0,
       activeOptionIndex: -1, // int; -1 = not customized yet: silver border around first option
       customizationVariantImageUrls: [],
@@ -39,7 +40,7 @@ export default class Customize extends Component {
       canvasDataURLs: [],
       widths: [],
       heights: [],
-      nImagesComposed: 0
+      nImagesComposed: 0,
     };
   }
 
@@ -57,10 +58,9 @@ export default class Customize extends Component {
   composeImages = () => {
     const {
       customizationVariantImageUrls,
-      featureVariantImageUrls
+      featureVariantImageUrls,
     } = this.state;
-
-    const activeFeatureIndex = this.state.featureIds.indexOf(
+    const activeFeatureIndex = this.state.allFeatureIds.indexOf(
       this.state.activeFeatureId
     );
     const underLayerImageUrls = customizationVariantImageUrls.slice(
@@ -76,7 +76,7 @@ export default class Customize extends Component {
     let underLayerCanvasDataURL = "";
     if (underLayerImageUrls.length > 0) {
       var underLayerPromise = imageComposer(underLayerImageUrls).then(
-        composedImage => {
+        (composedImage) => {
           underLayerCanvasDataURL = composedImage.url;
         }
       );
@@ -86,7 +86,7 @@ export default class Customize extends Component {
     let overLayerCanvasDataURL = "";
     if (overLayerImageUrls.length > 0) {
       var overLayerPromise = imageComposer(overLayerImageUrls).then(
-        composedImage => {
+        (composedImage) => {
           overLayerCanvasDataURL = composedImage.url;
         }
       );
@@ -108,8 +108,8 @@ export default class Customize extends Component {
       for (let i = 0; i < featureVariantImageUrls.length; ++i) {
         imageUrls[middleLayerIndex] = featureVariantImageUrls[i];
         imageComposer(imageUrls)
-          .then(composedImage => {
-            this.setState(state => {
+          .then((composedImage) => {
+            this.setState((state) => {
               let newCanvasDataURLs = [...state.canvasDataURLs];
               let newWidths = [...state.widths];
               let newHeights = [...state.heights];
@@ -122,22 +122,22 @@ export default class Customize extends Component {
                 canvasDataURLs: newCanvasDataURLs,
                 widths: newWidths,
                 heights: newHeights,
-                imagesComposed: state.imagesComposed + 1
+                imagesComposed: state.imagesComposed + 1,
               };
             });
           })
-          .catch(error => {
+          .catch((error) => {
             alert(error);
           });
       }
     });
   };
 
-  fetchPictureselfFeaturesApi = id => {
+  fetchPictureselfFeaturesApi = (id) => {
     return axios.get(API_URL + "features/p/" + id, getConfig());
   };
 
-  fetchChannelFeaturesApi = username => {
+  fetchChannelFeaturesApi = (username) => {
     return axios.get(API_URL + "features/" + username, getConfig());
   };
 
@@ -150,13 +150,14 @@ export default class Customize extends Component {
     }
   };
 
-  fetchFeatures = pictureselfId => {
+  fetchFeatures = (pictureselfId) => {
     this.fetchFeaturesApiPictureselfChannelSwitch()
-      .then(response => {
+      .then((response) => {
         this.setState(
           {
             featureIds: response.data["feature_ids"],
-            featureTitles: response.data["feature_titles"]
+            featureTitles: response.data["feature_titles"],
+            allFeatureIds: response.data["all_feature_ids"],
           },
           () => {
             this.fetchPictureselfCustomizationVariants(pictureselfId);
@@ -167,41 +168,41 @@ export default class Customize extends Component {
         //const firstFeatureId = response.data["feature_ids"][0];
         //this.handleActiveFeatureChange(firstFeatureId);
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         // to do
         alert(errorMessage);
       });
   };
 
-  fetchPictureselfCustomizationPositionApi = featureId => {
+  fetchPictureselfCustomizationPositionApi = (featureId) => {
     return axios.get(
       API_URL + "customizations/" + featureId + "/",
       getConfig()
     );
   };
 
-  fetchPictureselfCustomizationVariants = pictureselfId => {
+  fetchPictureselfCustomizationVariants = (pictureselfId) => {
     this.fetchPictureselfCustomizationVariantsApi(pictureselfId)
-      .then(response => {
+      .then((response) => {
         this.setState(
           {
             customizationVariantImageUrls: response.data["variant_image_urls"],
-            customizationVariantAlts: response.data["variant_original_names"]
+            customizationVariantAlts: response.data["variant_original_names"],
           },
           () => {
             this.handleActiveFeatureChange(this.state.featureIds[0]);
           }
         );
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         // to do
         alert(errorMessage);
       });
   };
 
-  fetchPictureselfCustomizationVariantsApi = id => {
+  fetchPictureselfCustomizationVariantsApi = (id) => {
     return axios.get(
       API_URL + "p/" + id + "/customization-variants/",
       getConfig()
@@ -210,7 +211,7 @@ export default class Customize extends Component {
 
   fetchPictureselfFeatureVariants = (pictureselfId, featureId) => {
     this.fetchPictureselfFeatureVariantsApi(pictureselfId, featureId)
-      .then(response => {
+      .then((response) => {
         this.setState(
           {
             featureVariantImageUrls: response.data["variant_image_urls"],
@@ -218,14 +219,14 @@ export default class Customize extends Component {
             nImagesComposed: 0,
             canvasDataURLs: [],
             widths: [],
-            heights: []
+            heights: [],
           },
           () => {
             this.composeImages();
           }
         );
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         // to do
         alert(errorMessage);
@@ -239,14 +240,14 @@ export default class Customize extends Component {
     );
   };
 
-  fetchPictureselfCustomizationPosition = featureId => {
+  fetchPictureselfCustomizationPosition = (featureId) => {
     this.fetchPictureselfCustomizationPositionApi(featureId)
-      .then(response => {
+      .then((response) => {
         this.setState({
-          activeOptionIndex: response.data["customization_position"]
+          activeOptionIndex: response.data["customization_position"],
         });
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         // to do
         alert(errorMessage);
@@ -261,11 +262,11 @@ export default class Customize extends Component {
     );
   };
 
-  handleActiveFeatureChange = new_active_feature_id => {
+  handleActiveFeatureChange = (new_active_feature_id) => {
     const pictureselfId = this.props.id;
     this.setState(
       {
-        activeFeatureId: new_active_feature_id
+        activeFeatureId: new_active_feature_id,
       },
       () => {
         this.fetchPictureselfFeatureVariants(
@@ -277,29 +278,31 @@ export default class Customize extends Component {
     );
   };
 
-  handleActiveOptionChange = newActiveOptionIndex => {
+  handleActiveOptionChange = (newActiveOptionIndex) => {
     this.setState({ activeOptionIndex: newActiveOptionIndex });
     this.editCustomizationPositionApi(
       this.state.activeFeatureId,
       newActiveOptionIndex
     )
-      .then(response => {
+      .then((response) => {
         const {
           customizationVariantImageUrls,
           featureVariantImageUrls,
           featureIds,
-          activeFeatureId
+          allFeatureIds,
+          activeFeatureId,
         } = this.state;
         let newCustomizationVariantImageUrls = [
-          ...customizationVariantImageUrls
+          ...customizationVariantImageUrls,
         ];
-        newCustomizationVariantImageUrls[featureIds.indexOf(activeFeatureId)] =
-          featureVariantImageUrls[newActiveOptionIndex];
+        newCustomizationVariantImageUrls[
+          allFeatureIds.indexOf(activeFeatureId)
+        ] = featureVariantImageUrls[newActiveOptionIndex];
         this.setState({
-          customizationVariantImageUrls: newCustomizationVariantImageUrls
+          customizationVariantImageUrls: newCustomizationVariantImageUrls,
         });
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         // to do
         alert(errorMessage);
@@ -315,7 +318,7 @@ export default class Customize extends Component {
       heights,
       canvasDataURLs,
       featureVariantAlts,
-      nImagesComposed
+      nImagesComposed,
     } = this.state;
     const COLUMN_WIDTH = 200;
     const GUTTER_WIDTH = 10;
@@ -364,7 +367,7 @@ export default class Customize extends Component {
         style={{
           filter: "brightness(109%)",
           "margin-right": "7px",
-          "margin-bottom": "5px"
+          "margin-bottom": "5px",
         }}
         compact
       />
@@ -394,7 +397,7 @@ export default class Customize extends Component {
                   ? activeOptionIndex == -1
                     ? "5px solid Silver"
                     : ""
-                  : ""
+                  : "",
             }}
           >
             <img
@@ -428,7 +431,7 @@ export default class Customize extends Component {
                         : "0") + "px",
 
                 "z-index": "-1",
-                position: "relative"
+                position: "relative",
               }}
             />
           </div>
@@ -454,14 +457,14 @@ export default class Customize extends Component {
                 "margin-left": "10px",
                 "margin-top": "5px",
                 color: "rgb(26, 141, 255)",
-                "font-size": "18px"
+                "font-size": "18px",
               }}
               icon
             >
               <Icon
                 style={{
                   "padding-right": "25px",
-                  color: "rgb(0, 128, 255)"
+                  color: "rgb(0, 128, 255)",
                 }}
                 name="check"
               />
@@ -482,7 +485,7 @@ export default class Customize extends Component {
           <div
             style={{
               "margin-top": "35px",
-              visibility: isLoading ? "visible" : "hidden"
+              visibility: isLoading ? "visible" : "hidden",
             }}
           >
             <Loader />
