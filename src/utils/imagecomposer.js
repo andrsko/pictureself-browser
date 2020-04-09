@@ -6,7 +6,10 @@ export const imageComposer = (urls) => {
   for (let url of urls) {
     let image = new Image();
     image.crossOrigin = "anonymous";
-    image.src = url;
+    // https://stackoverflow.com/questions/126772/how-to-force-a-web-browser-not-to-cache-images
+    // to do: https://serverfault.com/questions/856904/chrome-s3-cloudfront-no-access-control-allow-origin-header-on-initial-xhr-req/856948#856948
+    //        to enable caching in correct way
+    image.src = url.includes("base64") ? url : url + "?" + performance.now();
     images.push(image);
     promises.push(setImageListeners(image));
   }
