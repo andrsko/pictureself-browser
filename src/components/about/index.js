@@ -10,6 +10,7 @@ class About extends Component {
     return (
       <div>
         <p id="about-title">About</p>
+        <p id="about-text">Pictureself - Customizable Stickers</p>
       </div>
     );
   }
