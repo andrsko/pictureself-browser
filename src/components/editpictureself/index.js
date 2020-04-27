@@ -7,7 +7,8 @@ import {
   Icon,
   Modal,
   Header,
-  Popup
+  Popup,
+  Image,
 } from "semantic-ui-react";
 import React, { Component } from "react";
 import "./styles.css";
@@ -16,6 +17,7 @@ import { getConfig } from "../../utils/config";
 import { apiErrorHandler } from "../../utils/errorhandler";
 import { Link } from "react-router-dom";
 import { API_URL } from "../../api/constants";
+import Dropzone from "react-dropzone";
 import { number } from "prop-types";
 
 // ?! dont show alt if file is absent
@@ -25,7 +27,7 @@ class EditVariant extends Component {
     this.hoverOn = this.hoverOn.bind(this);
     this.hoverOff = this.hoverOff.bind(this);
     this.state = {
-      hover: false
+      hover: false,
     };
   }
   hoverOn = () => {
@@ -44,7 +46,7 @@ class EditVariant extends Component {
             style={{
               backgroundColor: "transparent",
               "margin-left": 0,
-              "margin-right": "35px"
+              "margin-right": "35px",
             }}
             icon="add"
             size="large"
@@ -66,7 +68,7 @@ class EditVariant extends Component {
               this.props.variant_index.toString()
             }
             type="file"
-            onChange={e =>
+            onChange={(e) =>
               this.props.insertVariant(
                 this.props.feature_index,
                 this.props.variant_index,
@@ -91,7 +93,7 @@ class EditVariant extends Component {
                 style={{
                   backgroundColor: "transparent",
                   margin: 0,
-                  visibility: "hidden"
+                  visibility: "hidden",
                 }}
                 icon="file image"
               />
@@ -109,7 +111,7 @@ class EditVariant extends Component {
                 style={{
                   backgroundColor: "transparent",
                   margin: 0,
-                  visibility: "hidden"
+                  visibility: "hidden",
                 }}
                 icon="delete"
               />
@@ -121,7 +123,7 @@ class EditVariant extends Component {
                 style={{
                   backgroundColor: "transparent",
                   margin: 0,
-                  visibility: this.state.hover ? "visible" : "hidden"
+                  visibility: this.state.hover ? "visible" : "hidden",
                 }}
                 icon="delete"
                 onClick={() =>
@@ -139,7 +141,7 @@ class EditVariant extends Component {
                 style={{
                   backgroundColor: "transparent",
                   margin: 0,
-                  visibility: this.state.hover ? "visible" : "hidden"
+                  visibility: this.state.hover ? "visible" : "hidden",
                 }}
                 icon="file image"
                 htmlFor={
@@ -160,7 +162,7 @@ class EditVariant extends Component {
                   this.props.variant_index.toString()
                 }
                 type="file"
-                onChange={e =>
+                onChange={(e) =>
                   this.props.updateVariant(
                     this.props.variant_id,
                     e.target.files
@@ -193,7 +195,7 @@ class EditFeature extends Component {
       hover: false,
       feature_to_include: "create_new",
       importedFeatureMessage: false,
-      importVariantsIsChecked: false
+      importVariantsIsChecked: false,
     };
   }
   showImportFeatureDropdown = () =>
@@ -214,7 +216,7 @@ class EditFeature extends Component {
   handleFeatureImportDropdownChange = (e, data) => {
     this.setState({
       feature_to_include: data.value,
-      includeFeature: data.value !== "create_new"
+      includeFeature: data.value !== "create_new",
     });
   };
   handleInsertButtonClick() {
@@ -225,7 +227,7 @@ class EditFeature extends Component {
     );
     this.setState({
       feature_to_include: "create_new",
-      includeFeature: false
+      includeFeature: false,
     });
   }
 
@@ -242,7 +244,7 @@ class EditFeature extends Component {
 
   importVariantsCheckboxHandleChange = () =>
     this.setState(({ importVariantsIsChecked }) => ({
-      importVariantsIsChecked: !importVariantsIsChecked
+      importVariantsIsChecked: !importVariantsIsChecked,
     }));
   showInsertPositions = () =>
     this.setState(({ insertChecked }) => ({ insertChecked: !insertChecked }));
@@ -268,7 +270,7 @@ class EditFeature extends Component {
       "padding-top": "0.25em",
       "padding-bottom": "0.25em",
       "padding-left": "0.5em",
-      "padding-right": "0.5em"
+      "padding-right": "0.5em",
     };
     const { feature_to_include } = this.state;
     if (this.props.insert) {
@@ -293,7 +295,7 @@ class EditFeature extends Component {
               visibility:
                 Object.keys(this.props.features_to_include).length === 0
                   ? "hidden"
-                  : "visible"
+                  : "visible",
             }}
           />
           <Checkbox
@@ -303,7 +305,7 @@ class EditFeature extends Component {
               visibility:
                 this.state.feature_to_include === "create_new"
                   ? "hidden"
-                  : "visible"
+                  : "visible",
             }}
             checked={this.state.importVariantsIsChecked}
             onChange={this.importVariantsCheckboxHandleChange}
@@ -382,7 +384,7 @@ class EditFeature extends Component {
                     as="label"
                     style={{
                       backgroundColor: "transparent",
-                      margin: 0
+                      margin: 0,
                     }}
                     icon="add"
                     size="large"
@@ -396,13 +398,13 @@ class EditFeature extends Component {
                     type="file"
                     accept="image/*"
                     multiple
-                    onChange={e =>
+                    onChange={(e) =>
                       this.props.addVariants(
                         this.props.feature_index,
                         e.target.files
                       )
                     }
-                    onClick={event => {
+                    onClick={(event) => {
                       event.target.value = null;
                     }}
                   />
@@ -422,7 +424,7 @@ class EditFeature extends Component {
         <Checkbox
           label="Import variants"
           style={{
-            "margin-bottom": "20px"
+            "margin-bottom": "20px",
           }}
           checked={true}
           disabled
@@ -448,7 +450,7 @@ class EditFeature extends Component {
                 class="btn"
                 style={{
                   backgroundColor: "transparent",
-                  visibility: this.state.hover ? "visible" : "hidden"
+                  visibility: this.state.hover ? "visible" : "hidden",
                 }}
                 icon="delete"
                 size="huge"
@@ -494,6 +496,10 @@ export default class EditPictureself extends Component {
       // for header
       initial_pictureself_title: "",
       pictureself_description: "",
+      customizableIsChecked: false,
+      nonCustomizableImageURL: "",
+      nonCustomizableImageFile: null,
+      nonCustomizableImageAlt: "",
       features_to_include: {},
       features: {},
       feature_order: [],
@@ -517,22 +523,22 @@ export default class EditPictureself extends Component {
       isUploading: false,
       nFilesUploaded: 0,
       legitCreatedVariantIds: [],
-      legitCreatedVariantIdsChunk: []
+      legitCreatedVariantIdsChunk: [],
     };
   }
 
-  fetchPictureselfApi = id => {
+  fetchPictureselfApi = (id) => {
     return axios.get(API_URL + "p/" + id + "/data/", getConfig());
   };
 
-  fetchFeaturesToIncludeApi = id => {
+  fetchFeaturesToIncludeApi = (id) => {
     return axios.get(
       API_URL + "p/" + id + "/features-to-include/",
       getConfig()
     );
   };
 
-  deletePictureselfApi = id => {
+  deletePictureselfApi = (id) => {
     return axios.delete(API_URL + "p/" + id + "/delete/", getConfig());
   };
 
@@ -542,8 +548,8 @@ export default class EditPictureself extends Component {
     const config = {
       headers: {
         Authorization: getConfig().headers.Authorization,
-        "content-type": "multipart/form-data"
-      }
+        "content-type": "multipart/form-data",
+      },
     };
     return axios.put(
       API_URL + "variants/" + id + "/" + "edit/",
@@ -552,14 +558,14 @@ export default class EditPictureself extends Component {
     );
   };
 
-  createVariantApi = file => {
+  createVariantApi = (file) => {
     const formData = new FormData();
     formData.set("file", file);
     const config = {
       headers: {
         Authorization: getConfig().headers.Authorization,
-        "content-type": "multipart/form-data"
-      }
+        "content-type": "multipart/form-data",
+      },
     };
     return axios.post(API_URL + "variants/" + "create/", formData, config);
   };
@@ -572,8 +578,8 @@ export default class EditPictureself extends Component {
     const config = {
       headers: {
         Authorization: getConfig().headers.Authorization,
-        "content-type": "multipart/form-data"
-      }
+        "content-type": "multipart/form-data",
+      },
     };
     if (this.state.pictureself_id === "0") {
       return axios.post(API_URL + "p/" + id + "/edit/", formData, config);
@@ -608,12 +614,12 @@ export default class EditPictureself extends Component {
       this.fetchPictureself();
     }
     this.fetchFeaturesToIncludeApi(pictureself)
-      .then(response => {
+      .then((response) => {
         this.setState({
-          features_to_include: response.data
+          features_to_include: response.data,
         });
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         // to do
         alert(errorMessage);
@@ -623,56 +629,86 @@ export default class EditPictureself extends Component {
   fetchPictureself = () => {
     const pictureself = this.state.pictureself_id;
     this.fetchPictureselfApi(pictureself)
-      .then(response => {
-        const variants = response.data["variants"];
-        const variantsLength = variants.length;
-        let variant_urls = {};
-        let variant_names = {};
-        for (let i = 0; i < variantsLength; i++) {
-          variant_urls[variants[i].id.toString()] = variants[i].image;
-          variant_names[variants[i].id.toString()] = variants[i].original_name;
-        }
-        const feature_order = JSON.parse(response.data["feature_ids_json"]);
-        const variant_order = JSON.parse(response.data["variant_ids_json"]);
-        let string_ids_feature_order = [];
-        let string_ids_variant_order = [];
-        const feature_order_length = feature_order.length;
-        const variant_order_length = variant_order.length;
-        for (let i = 0; i < feature_order_length; i++) {
-          string_ids_feature_order.push(feature_order[i].toString());
-        }
-        for (let i = 0; i < variant_order_length; i++) {
-          string_ids_variant_order.push([]);
-          const variant_order_line = variant_order[i];
-          const variant_order_line_length = variant_order_line.length;
-          for (let j = 0; j < variant_order_line_length; j++) {
-            string_ids_variant_order[i].push(variant_order_line[j].toString());
+      .then((response) => {
+        if (response.data["image"]) {
+          this.setState({
+            pictureself_title: response.data["title"],
+            initial_pictureself_title: response.data["title"],
+            pictureself_description: response.data["description"],
+            channel_username: response.data["username"],
+            customizableIsChecked: false,
+            nonCustomizableImageURL: response.data["image"],
+            nonCustomizableImageAlt: response.data["image_original_name"],
+          });
+        } else {
+          const variants = response.data["variants"];
+          const variantsLength = variants.length;
+          let variant_urls = {};
+          let variant_names = {};
+          for (let i = 0; i < variantsLength; i++) {
+            variant_urls[variants[i].id.toString()] = variants[i].image;
+            variant_names[variants[i].id.toString()] =
+              variants[i].original_name;
           }
+          const feature_order = JSON.parse(response.data["feature_ids_json"]);
+          const variant_order = JSON.parse(response.data["variant_ids_json"]);
+          let string_ids_feature_order = [];
+          let string_ids_variant_order = [];
+          const feature_order_length = feature_order.length;
+          const variant_order_length = variant_order.length;
+          for (let i = 0; i < feature_order_length; i++) {
+            string_ids_feature_order.push(feature_order[i].toString());
+          }
+          for (let i = 0; i < variant_order_length; i++) {
+            string_ids_variant_order.push([]);
+            const variant_order_line = variant_order[i];
+            const variant_order_line_length = variant_order_line.length;
+            for (let j = 0; j < variant_order_line_length; j++) {
+              string_ids_variant_order[i].push(
+                variant_order_line[j].toString()
+              );
+            }
+          }
+          let string_ids_features = {};
+          const features = response.data["features"];
+          const features_length = features.length;
+          for (let i = 0; i < features_length; i++) {
+            string_ids_features[features[i].id.toString()] = features[i].title;
+          }
+
+          this.setState({
+            pictureself_title: response.data["title"],
+            initial_pictureself_title: response.data["title"],
+            pictureself_description: response.data["description"],
+            channel_username: response.data["username"],
+            customizableIsChecked: true,
+            feature_order: string_ids_feature_order,
+            variant_order: string_ids_variant_order,
+            features: string_ids_features,
+            variant_urls: variant_urls,
+            variant_names: variant_names,
+          });
         }
-        let string_ids_features = {};
-        const features = response.data["features"];
-        const features_length = features.length;
-        for (let i = 0; i < features_length; i++) {
-          string_ids_features[features[i].id.toString()] = features[i].title;
-        }
-        this.setState({
-          pictureself_title: response.data["title"],
-          initial_pictureself_title: response.data["title"],
-          pictureself_description: response.data["description"],
-          channel_username: response.data["username"],
-          feature_order: string_ids_feature_order,
-          variant_order: string_ids_variant_order,
-          features: string_ids_features,
-          variant_urls: variant_urls,
-          variant_names: variant_names
-        });
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         alert(error);
         // to do
         alert(errorMessage);
       });
+  };
+
+  onCustomizableCheck = () =>
+    this.setState(({ customizableIsChecked }) => ({
+      customizableIsChecked: !customizableIsChecked,
+    }));
+
+  onNonCustomizableImageChange = (files) => {
+    this.setState({
+      nonCustomizableImageFile: files[0],
+      nonCustomizableImageURL: window.URL.createObjectURL(files[0]),
+      nonCustomizableImageAlt: files[0].name,
+    });
   };
 
   getNewFiles = () => {
@@ -687,7 +723,7 @@ export default class EditPictureself extends Component {
     const newFiles = {
       created_variant_ids: created_variant_ids,
       edited_variant_ids: edited_variant_ids,
-      variant_files: this.state.variant_files
+      variant_files: this.state.variant_files,
     };
 
     return newFiles;
@@ -710,7 +746,7 @@ export default class EditPictureself extends Component {
       description: this.state.pictureself_description,
       feature_order: JSON.stringify(normalized_feature_order),
       variant_order: JSON.stringify(this.state.variant_order),
-      features: JSON.stringify(this.state.features)
+      features: JSON.stringify(this.state.features),
     };
     return newInfo;
   };
@@ -720,17 +756,17 @@ export default class EditPictureself extends Component {
 
   importVariantsCheckboxHandleChange = () =>
     this.setState(({ importVariantsIsChecked }) => ({
-      importVariantsIsChecked: !importVariantsIsChecked
+      importVariantsIsChecked: !importVariantsIsChecked,
     }));
 
   showInsertPositions = () =>
     this.setState(({ insertChecked }) => ({ insertChecked: !insertChecked }));
 
-  handlePictureselfTitleChange = event => {
+  handlePictureselfTitleChange = (event) => {
     this.setState({ pictureself_title: event.target.value });
   };
 
-  handlePictureselfDescriptionChange = event => {
+  handlePictureselfDescriptionChange = (event) => {
     this.setState({ pictureself_description: event.target.value });
   };
   updateFeature = (feature_id, newTitle) => {
@@ -766,7 +802,7 @@ export default class EditPictureself extends Component {
         feature_to_include + "i" + this.state.nfc.toString();
       if (feature_position === this.state.feature_order.length) {
         this.setState({
-          feature_order: [...this.state.feature_order, new_feature_id]
+          feature_order: [...this.state.feature_order, new_feature_id],
         });
 
         this.setState({ variant_order: [...this.state.variant_order, []] });
@@ -784,15 +820,15 @@ export default class EditPictureself extends Component {
         this.setState({
           features_with_imported_variants: [
             ...this.state.features_with_imported_variants,
-            new_feature_id
-          ]
+            new_feature_id,
+          ],
         });
       }
       const new_nfc = this.state.nfc + 1;
       this.setState({ nfc: new_nfc });
       this.setState({
         feature_to_include: "create_new",
-        includeFeature: false
+        includeFeature: false,
       });
     }
   };
@@ -850,13 +886,13 @@ export default class EditPictureself extends Component {
     const new_url = window.URL.createObjectURL(new_file);
     const new_name = new_file.name;
     this.setState({
-      variant_files: { ...this.state.variant_files, [new_id]: new_file }
+      variant_files: { ...this.state.variant_files, [new_id]: new_file },
     });
     this.setState({
-      variant_names: { ...this.state.variant_names, [new_id]: new_name }
+      variant_names: { ...this.state.variant_names, [new_id]: new_name },
     });
     this.setState({
-      variant_urls: { ...this.state.variant_urls, [new_id]: new_url }
+      variant_urls: { ...this.state.variant_urls, [new_id]: new_url },
     });
 
     const new_nvc = this.state.nvc + 1;
@@ -898,30 +934,30 @@ export default class EditPictureself extends Component {
     //const new_id = "v" + this.state.nvc.toString();
     //const new_file = files[0];
     this.setState({
-      variant_files: { ...this.state.variant_files, ...new_variant_files }
+      variant_files: { ...this.state.variant_files, ...new_variant_files },
     });
     //const new_variant_name = { new_id: new_file.name };
     this.setState({
-      variant_names: { ...this.state.variant_names, ...new_variant_names }
+      variant_names: { ...this.state.variant_names, ...new_variant_names },
     });
     const new_nvc = this.state.nvc + number_of_files;
     this.setState({ nvc: new_nvc });
     let new_variant_order = this.state.variant_order.slice();
     new_variant_order[feature_position] = [
       ...new_variant_order[feature_position],
-      ...new_variant_ids
+      ...new_variant_ids,
     ];
     this.setState({ variant_order: new_variant_order });
     //const new_variant_url = window.URL.createObjectURL(new_file);
     this.setState({
-      variant_urls: { ...this.state.variant_urls, ...new_variant_urls }
+      variant_urls: { ...this.state.variant_urls, ...new_variant_urls },
     });
   };
 
   handleFeatureImportDropdownChange(e, data) {
     this.setState({
       feature_to_include: data.value,
-      includeFeature: data.value !== "create_new"
+      includeFeature: data.value !== "create_new",
     });
   }
 
@@ -999,12 +1035,12 @@ export default class EditPictureself extends Component {
         )
       );
       sequence = sequence.then(() => {
-        this.setState(state => ({
+        this.setState((state) => ({
           legitCreatedVariantIds: state.legitCreatedVariantIds.concat(
             state.legitCreatedVariantIdsChunk
           ),
           nFilesUploaded:
-            state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE)
+            state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE),
         }));
       });
     }
@@ -1018,12 +1054,12 @@ export default class EditPictureself extends Component {
         sequence = sequence.then(() =>
           this.createVariantApi(variantFiles[createdVariantIds[i]])
         );
-        sequence = sequence.then(response => {
-          this.setState(state => ({
+        sequence = sequence.then((response) => {
+          this.setState((state) => ({
             legitCreatedVariantIdsChunk: [
               ...state.legitCreatedVariantIdsChunk,
-              response.data["new_variant_id"]
-            ]
+              response.data["new_variant_id"],
+            ],
           }));
         });
       }
@@ -1055,9 +1091,9 @@ export default class EditPictureself extends Component {
         this.editVariantsChunk(editedVariantIdsChunk, editedVariantFilesChunk)
       );
       sequence = sequence.then(() => {
-        this.setState(state => ({
+        this.setState((state) => ({
           nFilesUploaded:
-            state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE)
+            state.nFilesUploaded + (i == nChunks ? remainder : CHUNK_SIZE),
         }));
       });
     }
@@ -1122,7 +1158,7 @@ export default class EditPictureself extends Component {
 
   // to do: rename "save" instead of "post"
   //        state variable also
-  showErrorOnPost = message => {
+  showErrorOnPost = (message) => {
     const RETENTION_TIME = 9000;
     this.setState({ errorOnPost: message });
     setTimeout(() => {
@@ -1130,61 +1166,106 @@ export default class EditPictureself extends Component {
     }, RETENTION_TIME);
   };
 
-  editPictureself = () => {
-    if (this.atLeastOneVariant()) {
-      this.setState({
-        isUploading: true
-      });
-      let newInfo = this.getNewInfo();
-      let newFiles = this.getNewFiles();
-      const pictureselfId = this.state.pictureself_id;
+  editNonCustomizablePictureselfApi = (id, data) => {
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(data)) {
+      formData.append(key, value);
+    }
+    const config = {
+      headers: {
+        Authorization: getConfig().headers.Authorization,
+        "content-type": "multipart/form-data",
+      },
+    };
+    if (id === "0") {
+      return axios.post(API_URL + "p/" + id + "/edit/", formData, config);
+    } else {
+      return axios.put(API_URL + "p/" + id + "/edit/", formData, config);
+    }
+  };
 
-      this.editVariants(newFiles.edited_variant_ids, newFiles.variant_files)
-        .then(response => {
-          this.createVariants(
-            newFiles.created_variant_ids,
-            newFiles.variant_files
-          ).then(response => {
-            const legitCreatedVariantIds = this.state.legitCreatedVariantIds;
-            newInfo["created_variant_ids"] = JSON.stringify(
-              legitCreatedVariantIds
-            );
-            for (let i = 0; i < legitCreatedVariantIds.length; ++i) {
-              newInfo["variant_order"] = newInfo["variant_order"].replace(
-                '"' + newFiles.created_variant_ids[i].toString() + '"',
-                '"' + legitCreatedVariantIds[i].toString() + '"'
-              );
-            }
-            this.editPictureselfInfoApi(pictureselfId, newInfo).then(
-              response => {
-                const idRedirectTo =
-                  this.state.pictureself_id == "0"
-                    ? response.data.new_pictureself_id
-                    : this.state.pictureself_id;
-                this.props.history.push("/p/" + idRedirectTo);
-              }
-            );
-          });
-        })
-        .catch(error => {
-          this.showPostError("An Error Occured, Please Try Again");
-          this.setState({
-            nFilesUploaded: 0,
-            legitCreatedVariantIds: [],
-            isUploading: false
-          });
+  editPictureself = () => {
+    const pictureselfId = this.state.pictureself_id;
+    const { customizableIsChecked, nonCustomizableImageFile } = this.state;
+
+    if (!customizableIsChecked) {
+      if (nonCustomizableImageFile) {
+        this.setState({
+          isUploading: true,
         });
-    } else this.showErrorOnPost("At Least 1 Variant Should Be Provided");
+        const newData = {
+          title: this.state.pictureself_title,
+          description: this.state.pictureself_description,
+          image: nonCustomizableImageFile,
+        };
+
+        this.editNonCustomizablePictureselfApi(pictureselfId, newData).then(
+          (response) => {
+            const idRedirectTo =
+              pictureselfId == "0"
+                ? response.data.new_pictureself_id
+                : pictureselfId;
+            this.props.history.push("/p/" + idRedirectTo);
+          }
+        );
+      } else {
+        this.showPostError("An Image Should Be Provided");
+      }
+    } else {
+      if (this.atLeastOneVariant()) {
+        this.setState({
+          isUploading: true,
+        });
+        let newInfo = this.getNewInfo();
+        let newFiles = this.getNewFiles();
+
+        this.editVariants(newFiles.edited_variant_ids, newFiles.variant_files)
+          .then((response) => {
+            this.createVariants(
+              newFiles.created_variant_ids,
+              newFiles.variant_files
+            ).then((response) => {
+              const legitCreatedVariantIds = this.state.legitCreatedVariantIds;
+              newInfo["created_variant_ids"] = JSON.stringify(
+                legitCreatedVariantIds
+              );
+              for (let i = 0; i < legitCreatedVariantIds.length; ++i) {
+                newInfo["variant_order"] = newInfo["variant_order"].replace(
+                  '"' + newFiles.created_variant_ids[i].toString() + '"',
+                  '"' + legitCreatedVariantIds[i].toString() + '"'
+                );
+              }
+              this.editPictureselfInfoApi(pictureselfId, newInfo).then(
+                (response) => {
+                  const idRedirectTo =
+                    this.state.pictureself_id == "0"
+                      ? response.data.new_pictureself_id
+                      : this.state.pictureself_id;
+                  this.props.history.push("/p/" + idRedirectTo);
+                }
+              );
+            });
+          })
+          .catch((error) => {
+            this.showPostError("An Error Occured, Please Try Again");
+            this.setState({
+              nFilesUploaded: 0,
+              legitCreatedVariantIds: [],
+              isUploading: false,
+            });
+          });
+      } else this.showErrorOnPost("At Least 1 Variant Should Be Provided");
+    }
   };
 
   handleDeletePictureself = () => {
     const { pictureself } = this.props.match.params;
     if (pictureself !== "0") {
       this.deletePictureselfApi(pictureself)
-        .then(response => {
+        .then((response) => {
           this.props.history.push("/" + this.state.channel_username);
         })
-        .catch(error => {
+        .catch((error) => {
           this.setState({ errorOnPost: "An Error Occured, Please Try Again" });
           setTimeout(() => {
             this.setState({ errorOnPost: "" });
@@ -1202,6 +1283,11 @@ export default class EditPictureself extends Component {
     let feature_order_copy = this.state.feature_order.slice();
     const reversed_feature_order = feature_order_copy.reverse();
     const feature_order_length = this.state.feature_order.length;
+    const {
+      customizableIsChecked,
+      nonCustomizableImageURL,
+      nonCustomizableImageAlt,
+    } = this.state;
 
     let featureToImportOptions = [];
     let option_create_new = {};
@@ -1273,41 +1359,38 @@ export default class EditPictureself extends Component {
     const { feature_to_include } = this.state;
     const { pictureself } = this.props.match.params;
 
-    // ? add link to title
-
-    return (
-      <div style={{ "margin-left": "35px", "padding-bottom": "20px" }}>
-        <p id="editpictureself-header">
-          {pictureself == 0 ? "Create New" : "Edit "}
-          <b> {pictureself == 0 ? "" : this.state.initial_pictureself_title}</b>
-        </p>
-        <Link to="/help" target="_blank">
-          <Icon
-            name="question circle outline"
-            style={{ color: "dodgerBlue" }}
-          />
-          <p id="editpictureself-howitworks-link">How It Works</p>
-        </Link>
-        <Form style={{ marginTop: "15px" }}>
-          <Form.Input
-            width="11"
-            size="large"
-            type="text"
-            name="pictureself_title"
-            placeholder="Title"
-            value={this.state.pictureself_title}
-            onChange={event => this.handlePictureselfTitleChange(event)}
-          />
-          <Form.TextArea
-            width="11"
-            name="pictureself_description"
-            placeholder="Comment"
-            value={this.state.pictureself_description}
-            onChange={event => this.handlePictureselfDescriptionChange(event)}
-          />
-        </Form>
-        <br />
-        <br />
+    const editContentMenu = !customizableIsChecked ? (
+      <React.Fragment>
+        {!nonCustomizableImageURL ? (
+          <React.Fragment>
+            <Dropzone
+              onDrop={this.onNonCustomizableImageChange}
+              multiple={false}
+              accept="image/*"
+            ></Dropzone>
+            <br />
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <img src={nonCustomizableImageURL} alt={nonCustomizableImageAlt} />{" "}
+            <br />
+            <br />
+          </React.Fragment>
+        )}
+        <Button
+          content={!nonCustomizableImageURL ? "Add image" : "Change image"}
+          as="label"
+          htmlFor={"hiddenFileInputNonCustomizableImage"}
+        />
+        <input
+          hidden
+          id={"hiddenFileInputNonCustomizableImage"}
+          type="file"
+          onChange={(e) => this.onNonCustomizableImageChange(e.target.files)}
+        />
+      </React.Fragment>
+    ) : (
+      <React.Fragment>
         <Button
           content="Add feature"
           onClick={
@@ -1338,7 +1421,7 @@ export default class EditPictureself extends Component {
             visibility:
               Object.keys(this.state.features_to_include).length === 0
                 ? "hidden"
-                : "visible"
+                : "visible",
           }}
         />
         <Checkbox
@@ -1346,7 +1429,7 @@ export default class EditPictureself extends Component {
           style={{
             "margin-left": "5px",
             visibility:
-              feature_to_include === "create_new" ? "hidden" : "visible"
+              feature_to_include === "create_new" ? "hidden" : "visible",
           }}
           checked={this.state.importVariantsIsChecked}
           onChange={this.importVariantsCheckboxHandleChange}
@@ -1355,6 +1438,55 @@ export default class EditPictureself extends Component {
         <br />
         {insertCheckbox}
         <div>{editfeatures}</div>
+      </React.Fragment>
+    );
+    // ? add link to title
+
+    return (
+      <div style={{ "margin-left": "35px", "padding-bottom": "20px" }}>
+        <p id="editpictureself-header">
+          {pictureself == 0 ? "Create New" : "Edit "}
+          <b> {pictureself == 0 ? "" : this.state.initial_pictureself_title}</b>
+        </p>
+        <Link to="/help" target="_blank">
+          <Icon
+            name="question circle outline"
+            style={{ color: "dodgerBlue" }}
+          />
+          <p id="editpictureself-howitworks-link">How It Works</p>
+        </Link>
+        <Form style={{ marginTop: "15px" }}>
+          <Form.Input
+            width="11"
+            size="large"
+            type="text"
+            name="pictureself_title"
+            placeholder="Title"
+            value={this.state.pictureself_title}
+            onChange={(event) => this.handlePictureselfTitleChange(event)}
+          />
+          <Form.TextArea
+            width="11"
+            name="pictureself_description"
+            placeholder="Comment"
+            value={this.state.pictureself_description}
+            onChange={(event) => this.handlePictureselfDescriptionChange(event)}
+          />
+        </Form>
+        <br />
+        <br />
+        <Checkbox
+          toggle
+          size="large"
+          label="Customizable"
+          style={{ "margin-bottom": "0px" }}
+          checked={this.state.customizableIsChecked}
+          onChange={this.onCustomizableCheck}
+        />
+        <br />
+        <br />
+        <br />
+        {editContentMenu}
         <br />
         <br />
         <p
@@ -1417,7 +1549,7 @@ export default class EditPictureself extends Component {
           size="large"
           style={{
             "margin-right": "35px",
-            "margin-bottom": "35px"
+            "margin-bottom": "35px",
           }}
           loading={this.state.isUploading}
           onClick={
