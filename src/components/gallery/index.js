@@ -4,8 +4,9 @@ import StackGrid from "react-stack-grid";
 import { Link } from "react-router-dom";
 import { imageComposer } from "../../utils/imagecomposer";
 import Loader from "../loader";
+import { withRouter } from "react-router-dom";
 
-export default class Gallery extends Component {
+class Gallery extends Component {
   constructor(props) {
     super(props);
 
@@ -13,7 +14,7 @@ export default class Gallery extends Component {
       canvasDataURLs: [],
       widths: [],
       heights: [],
-      nImagesComposed: 0
+      nImagesComposed: 0,
     };
   }
 
@@ -21,8 +22,8 @@ export default class Gallery extends Component {
     const { pictureselfs } = this.props;
     for (let i = 0; i < pictureselfs.length; ++i) {
       imageComposer(pictureselfs[i].image_urls)
-        .then(composedImage => {
-          this.setState(state => {
+        .then((composedImage) => {
+          this.setState((state) => {
             let newCanvasDataURLs = [...state.canvasDataURLs];
             let newWidths = [...state.widths];
             let newHeights = [...state.heights];
@@ -35,15 +36,21 @@ export default class Gallery extends Component {
               canvasDataURLs: newCanvasDataURLs,
               widths: newWidths,
               heights: newHeights,
-              imagesComposed: state.imagesComposed + 1
+              imagesComposed: state.imagesComposed + 1,
             };
           });
         })
-        .catch(error => {
+        .catch((error) => {
           alert(error);
         });
     }
   }
+
+  redirectToCustomize = (id) => {
+    this.props.history.push({
+      pathname: "/p/" + id + "/customize/",
+    });
+  };
 
   render() {
     const { pictureselfs, columnWidth, channel } = this.props;
@@ -66,8 +73,20 @@ export default class Gallery extends Component {
       const canvasDataURL = canvasDataURLs[i];
       if (canvasDataURL !== undefined) {
         let pictureself = pictureselfs[i];
+        const customizeButton =
+          pictureself.is_customizable && !channel ? (
+            <div
+              id="gallery-customize-button"
+              onClick={() => {
+                this.redirectToCustomize(pictureself.id);
+              }}
+            >
+              CUSTOMIZE
+            </div>
+          ) : null;
         pCards.push(
           <div key={pictureself.id.toString()}>
+            {customizeButton}
             <Link to={`/p/${pictureself.id.toString()}/`}>
               <div
                 style={{
@@ -75,7 +94,7 @@ export default class Gallery extends Component {
                   "box-shadow":
                     "0px " +
                     box_shadow_heights[pictureself.id].toString() +
-                    "px inset rgba(175,175,175,0.075)"
+                    "px inset rgba(175,175,175,0.075)",
                 }}
               >
                 <img
@@ -90,7 +109,7 @@ export default class Gallery extends Component {
                         : 0 + "px",
 
                     "z-index": "-1",
-                    position: "relative"
+                    position: "relative",
                   }}
                 />
               </div>
@@ -102,7 +121,7 @@ export default class Gallery extends Component {
                 className="gallery title"
                 style={{
                   width: columnWidth - 10 + "px",
-                  "margin-left": "5px"
+                  "margin-left": "5px",
                 }}
               >
                 {pictureself.title}
@@ -116,7 +135,7 @@ export default class Gallery extends Component {
                   className="gallery channel"
                   style={{
                     width: columnWidth - 10 + "px",
-                    "margin-left": "5px"
+                    "margin-left": "5px",
                   }}
                 >
                   {pictureself.name}
@@ -145,7 +164,7 @@ export default class Gallery extends Component {
         <div
           style={{
             "margin-top": "35px",
-            visibility: isLoading ? "visible" : "hidden"
+            visibility: isLoading ? "visible" : "hidden",
           }}
         >
           <Loader />
@@ -154,3 +173,5 @@ export default class Gallery extends Component {
     );
   }
 }
+
+export default withRouter(Gallery);

@@ -16,3 +16,11 @@ p.title {
   margin-bottom: 3px;
   font-weight: bold;
 }
+#gallery-customize-button {
+  letter-spacing: 1px;
+  font-size: 11px;
+  color: dodgerBlue;
+  cursor: pointer;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
