@@ -18,6 +18,7 @@ import Loader from "../loader";
 import StackGrid from "react-stack-grid";
 import "./styles.css";
 import { API_URL } from "../../api/constants";
+import store from "../../store";
 
 export default class Customize extends Component {
   constructor(props) {
@@ -134,11 +135,11 @@ export default class Customize extends Component {
   };
 
   fetchPictureselfFeaturesApi = (id) => {
-    return axios.get(API_URL + "features/p/" + id, getConfig());
+    return axios.get(API_URL + "features/p/" + id);
   };
 
   fetchChannelFeaturesApi = (username) => {
-    return axios.get(API_URL + "features/" + username, getConfig());
+    return axios.get(API_URL + "features/" + username);
   };
 
   fetchFeaturesApiPictureselfChannelSwitch = () => {
@@ -203,10 +204,7 @@ export default class Customize extends Component {
   };
 
   fetchPictureselfCustomizationVariantsApi = (id) => {
-    return axios.get(
-      API_URL + "p/" + id + "/customization-variants/",
-      getConfig()
-    );
+    return axios.get(API_URL + "p/" + id + "/customization-variants/");
   };
 
   fetchPictureselfFeatureVariants = (pictureselfId, featureId) => {
@@ -273,45 +271,51 @@ export default class Customize extends Component {
           pictureselfId,
           new_active_feature_id
         );
-        this.fetchPictureselfCustomizationPosition(new_active_feature_id);
+        if (this.props.isAuthenticated)
+          this.fetchPictureselfCustomizationPosition(new_active_feature_id);
+        else {
+          let newActiveOptionIndex =
+            new_active_feature_id in store.getState().customize
+              ? store.getState().customize[new_active_feature_id]
+              : -1;
+          this.setState({ activeOptionIndex: newActiveOptionIndex });
+        }
       }
     );
   };
 
   handleActiveOptionChange = (newActiveOptionIndex) => {
     this.setState({ activeOptionIndex: newActiveOptionIndex });
-    this.editCustomizationPositionApi(
-      this.state.activeFeatureId,
-      newActiveOptionIndex
-    )
-      .then((response) => {
-        const {
-          customizationVariantImageUrls,
-          featureVariantImageUrls,
-          featureIds,
-          allFeatureIds,
-          activeFeatureId,
-        } = this.state;
-        let newCustomizationVariantImageUrls = [
-          ...customizationVariantImageUrls,
-        ];
-        newCustomizationVariantImageUrls[
-          allFeatureIds.indexOf(activeFeatureId)
-        ] = featureVariantImageUrls[newActiveOptionIndex];
-        this.setState({
-          customizationVariantImageUrls: newCustomizationVariantImageUrls,
-        });
-      })
-      .catch((error) => {
+    if (this.props.isAuthenticated)
+      this.editCustomizationPositionApi(
+        this.state.activeFeatureId,
+        newActiveOptionIndex
+      ).catch((error) => {
         const errorMessage = apiErrorHandler(error);
         // to do
         alert(errorMessage);
       });
+    else
+      this.props.editCustomization({
+        [this.state.activeFeatureId]: newActiveOptionIndex,
+      });
+    //.then((response) => {
+    const {
+      customizationVariantImageUrls,
+      featureVariantImageUrls,
+
+      allFeatureIds,
+      activeFeatureId,
+    } = this.state;
+    let newCustomizationVariantImageUrls = [...customizationVariantImageUrls];
+    newCustomizationVariantImageUrls[allFeatureIds.indexOf(activeFeatureId)] =
+      featureVariantImageUrls[newActiveOptionIndex];
+    this.setState({
+      customizationVariantImageUrls: newCustomizationVariantImageUrls,
+    });
   };
 
   render() {
-    const { isAuthenticated } = this.props;
-
     const {
       activeOptionIndex,
       widths,
@@ -441,57 +445,55 @@ export default class Customize extends Component {
 
     const isLoading = nImagesComposed === featureVariantAlts.length;
 
-    if (isAuthenticated) {
-      return (
-        <div>
-          <Link
-            to={
-              this.props.type == "pictureself"
-                ? `/p/${this.props.id}/`
-                : `/${this.props.id}/`
-            }
-          >
-            <Button
-              style={{
-                backgroundColor: "transparent",
-                "margin-left": "10px",
-                "margin-top": "5px",
-                color: "rgb(26, 141, 255)",
-                "font-size": "18px",
-              }}
-              icon
-            >
-              <Icon
-                style={{
-                  "padding-right": "25px",
-                  color: "rgb(0, 128, 255)",
-                }}
-                name="check"
-              />
-              DONE
-            </Button>
-          </Link>
-          <div id="feature-menu">{featureMenu}</div>
-          <br />
-          <StackGrid
-            monitorImagesLoaded={true}
-            columnWidth={COLUMN_WIDTH}
-            gutterWidth={GUTTER_WIDTH}
-            gutterHeight={GUTTER_HEIGHT}
-            duration={0}
-          >
-            {optionCards}
-          </StackGrid>
-          <div
+    return (
+      <div>
+        <Link
+          to={
+            this.props.type == "pictureself"
+              ? `/p/${this.props.id}/`
+              : `/${this.props.id}/`
+          }
+        >
+          <Button
             style={{
-              "margin-top": "35px",
-              visibility: isLoading ? "visible" : "hidden",
+              backgroundColor: "transparent",
+              "margin-left": "10px",
+              "margin-top": "5px",
+              color: "rgb(26, 141, 255)",
+              "font-size": "18px",
             }}
+            icon
           >
-            <Loader />
-          </div>
+            <Icon
+              style={{
+                "padding-right": "25px",
+                color: "rgb(0, 128, 255)",
+              }}
+              name="check"
+            />
+            DONE
+          </Button>
+        </Link>
+        <div id="feature-menu">{featureMenu}</div>
+        <br />
+        <StackGrid
+          monitorImagesLoaded={true}
+          columnWidth={COLUMN_WIDTH}
+          gutterWidth={GUTTER_WIDTH}
+          gutterHeight={GUTTER_HEIGHT}
+          duration={0}
+        >
+          {optionCards}
+        </StackGrid>
+        <div
+          style={{
+            "margin-top": "35px",
+            visibility: isLoading ? "visible" : "hidden",
+          }}
+        >
+          <Loader />
         </div>
-      );
-    } else return <p>Customization isn't available when logged out.</p>;
+      </div>
+    );
   }
 }

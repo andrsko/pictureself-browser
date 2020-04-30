@@ -31,11 +31,14 @@ export default class P extends Component {
       canvasDataURL: "",
       width: 0,
       height: 0,
-      isLoading: true
+      isLoading: true,
     };
   }
-  fetchPictureselfDisplayApi = id => {
-    return axios.get(API_URL + "p/" + id, getConfig());
+  fetchPictureselfDisplayApi = (id) => {
+    let config = store.getState().auth.isAuthenticated
+      ? getConfig()
+      : { params: store.getState().customize };
+    return axios.get(API_URL + "p/" + id, config);
   };
 
   componentDidMount() {
@@ -45,7 +48,7 @@ export default class P extends Component {
   fetchPictureselfDisplay = () => {
     const pictureself = this.state.id;
     this.fetchPictureselfDisplayApi(pictureself)
-      .then(response => {
+      .then((response) => {
         this.setState(
           {
             title: response.data["title"],
@@ -57,17 +60,17 @@ export default class P extends Component {
             isLiked: response.data["is_liked"],
             numberOfLikes: response.data["number_of_likes"],
             date: response.data["timestamp"],
-            avatar: response.data["avatar"]
+            avatar: response.data["avatar"],
           },
           () => {
             imageComposer(this.state.imageUrls)
-              .then(composedImage => {
+              .then((composedImage) => {
                 this.setState(
                   {
                     width: composedImage.width,
                     height: composedImage.height,
                     canvasDataURL: composedImage.url,
-                    isLoading: false
+                    isLoading: false,
                   },
                   () => {
                     if (
@@ -81,13 +84,13 @@ export default class P extends Component {
                   }
                 );
               })
-              .catch(error => {
+              .catch((error) => {
                 alert(error);
               });
           }
         );
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         alert(error);
         // to do
@@ -95,7 +98,7 @@ export default class P extends Component {
       });
   };
 
-  toggleLikeApi = id => {
+  toggleLikeApi = (id) => {
     return axios.get(API_URL + "p/" + id + "/toggle-like/", getConfig());
   };
   toggleLike = () => {
@@ -105,7 +108,7 @@ export default class P extends Component {
       this.setState({
         numberOfLikes: this.state.isLiked
           ? this.state.numberOfLikes - 1
-          : this.state.numberOfLikes + 1
+          : this.state.numberOfLikes + 1,
       });
       this.setState({ isLiked: !this.state.isLiked });
       this.toggleLikeApi(this.state.id);
@@ -114,18 +117,18 @@ export default class P extends Component {
       location.pathname = "/p/" + this.props.match.params.pictureself + "/like";
       this.props.history.push({
         pathname: "/login",
-        state: { from: location }
+        state: { from: location },
       });
     }
   };
   redirectToEdit = () => {
     this.props.history.push({
-      pathname: "/p/" + this.props.match.params.pictureself + "/edit/"
+      pathname: "/p/" + this.props.match.params.pictureself + "/edit/",
     });
   };
   redirectToCustomize = () => {
     this.props.history.push({
-      pathname: "/p/" + this.props.match.params.pictureself + "/customize/"
+      pathname: "/p/" + this.props.match.params.pictureself + "/customize/",
     });
   };
 
@@ -156,7 +159,7 @@ export default class P extends Component {
         "padding-top": "0.25em",
         "padding-bottom": "0.25em",
         "padding-left": "0.5em",
-        "padding-right": "0.5em"
+        "padding-right": "0.5em",
       };
       const customizeButton = this.state.isCustomizable ? (
         <div id="p-customize-button" onClick={this.redirectToCustomize}>
@@ -181,7 +184,7 @@ export default class P extends Component {
         "Sept",
         "Oct",
         "Nov",
-        "Dec"
+        "Dec",
       ];
       let dateDisplay = "";
       if (date != "") {
@@ -216,13 +219,13 @@ export default class P extends Component {
                   "padding-right": imgPaddingLeftRight,
                   "padding-top": imgPaddingTopBottom,
                   "padding-bottom": imgPaddingTopBottom,
-                  "border-right": "1px solid rgb(235, 235, 235)"
+                  "border-right": "1px solid rgb(235, 235, 235)",
                 }}
               />
               <div
                 id="p-menu"
                 style={{
-                  height: menuDivHeight
+                  height: menuDivHeight,
                 }}
               >
                 <div id="p-info" style={{ height: infoDivHeight }}>
@@ -242,7 +245,7 @@ export default class P extends Component {
                   {customizeButton}
                   <div
                     id="p-like-download-buttons"
-                    ref={buttonsDiv => (this.buttonsDiv = buttonsDiv)}
+                    ref={(buttonsDiv) => (this.buttonsDiv = buttonsDiv)}
                   >
                     <Popup
                       position="top center"
@@ -257,7 +260,7 @@ export default class P extends Component {
                             style={{
                               padding: "10px",
                               "margin-right": "5px",
-                              backgroundColor: "transparent"
+                              backgroundColor: "transparent",
                             }}
                             icon
                           >
@@ -282,7 +285,7 @@ export default class P extends Component {
                           as="div"
                           style={{
                             "margin-left": "-10px",
-                            backgroundColor: "transparent"
+                            backgroundColor: "transparent",
                           }}
                           labelPosition="right"
                           onClick={this.toggleLike}
@@ -290,7 +293,7 @@ export default class P extends Component {
                           <Button
                             style={{
                               padding: "10px",
-                              backgroundColor: "transparent"
+                              backgroundColor: "transparent",
                             }}
                             icon
                           >
@@ -308,7 +311,7 @@ export default class P extends Component {
                               color: this.state.isLiked
                                 ? "rgb(215, 55, 55)"
                                 : "",
-                              padding: "0px"
+                              padding: "0px",
                             }}
                             as="a"
                           >

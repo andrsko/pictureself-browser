@@ -6,7 +6,7 @@ import {
   Message,
   Icon,
   Modal,
-  Header
+  Header,
 } from "semantic-ui-react";
 import React, { Component } from "react";
 import axios from "axios";
@@ -16,6 +16,7 @@ import Gallery from "../gallery";
 import { Link } from "react-router-dom";
 import Loader from "../loader";
 import { API_URL } from "../../api/constants";
+import store from "../../store";
 
 export default class Home extends Component {
   constructor(props) {
@@ -23,7 +24,7 @@ export default class Home extends Component {
 
     this.state = {
       pictureselfs: [],
-      isLoading: true
+      isLoading: true,
     };
   }
 
@@ -32,22 +33,25 @@ export default class Home extends Component {
   }
 
   fetchPictureselfsIndexApi = () => {
-    return axios.get(API_URL + "p/index/", getConfig());
+    let config = store.getState().auth.isAuthenticated
+      ? getConfig()
+      : { params: store.getState().customize };
+    return axios.get(API_URL + "p/index/", config);
   };
 
   fetchPictureselfsIndex = () => {
     this.fetchPictureselfsIndexApi()
-      .then(response => {
+      .then((response) => {
         this.setState(
           {
-            pictureselfs: response.data
+            pictureselfs: response.data,
           },
           () => {
             this.setState({ isLoading: false });
           }
         );
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         //alert(error);
         // to do

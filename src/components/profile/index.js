@@ -22,7 +22,7 @@ class Profile extends Component {
       pictureselfs: [],
       isSubscribed: this.props.isSubscribed,
       numberOfSubscribers: this.props.numberOfSubscribers,
-      isLoading: true
+      isLoading: true,
     };
   }
 
@@ -39,31 +39,31 @@ class Profile extends Component {
     }
   }
 
-  fetchPictureselfsUserApi = username => {
-    return axios.get(
-      API_URL + "user/" + username + "/pictureselfs/",
-      getConfig()
-    );
+  fetchPictureselfsUserApi = (username) => {
+    let config = store.getState().auth.isAuthenticated
+      ? getConfig()
+      : { params: store.getState().customize };
+    return axios.get(API_URL + "user/" + username + "/pictureselfs/", config);
   };
 
   fetchPictureselfsUser = () => {
     this.fetchPictureselfsUserApi(this.props.username)
-      .then(response => {
+      .then((response) => {
         if (this._isMounted) {
           this.setState({
             pictureselfs: response.data,
-            isLoading: false
+            isLoading: false,
           });
         }
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         // to do
         alert(errorMessage);
       });
   };
 
-  toggleSubscribeApi = id => {
+  toggleSubscribeApi = (id) => {
     return axios.get(
       API_URL + "user/" + id + "/toggle-subscription/",
       getConfig()
@@ -76,7 +76,7 @@ class Profile extends Component {
       this.setState({
         numberOfSubscribers: this.state.isSubscribed
           ? this.state.numberOfSubscribers - 1
-          : this.state.numberOfSubscribers + 1
+          : this.state.numberOfSubscribers + 1,
       });
       this.setState({ isSubscribed: !this.state.isSubscribed });
       this.toggleSubscribeApi(this.props.username);
@@ -85,7 +85,7 @@ class Profile extends Component {
       location.pathname = "/" + this.props.match.params.username + "/subscribe";
       this.props.history.push({
         pathname: "/login",
-        state: { from: location }
+        state: { from: location },
       });
     }
   };
@@ -94,7 +94,7 @@ class Profile extends Component {
     if (this.state.pictureselfs.length > 0)
       this.props.history.push({
         pathname:
-          "/p/" + this.state.pictureselfs[0].id.toString() + "/customize/"
+          "/p/" + this.state.pictureselfs[0].id.toString() + "/customize/",
       });
   };
 
@@ -134,7 +134,7 @@ class Profile extends Component {
             style={{
               color: "rgb(155,155,155)",
               "margin-bottom": "10px",
-              "font-weight": "bold"
+              "font-weight": "bold",
             }}
           />
         );
@@ -153,7 +153,7 @@ class Profile extends Component {
           style={{
             backgroundColor: "transparent",
             "font-weight": "bold",
-            "margin-bottom": "10px"
+            "margin-bottom": "10px",
           }}
           onClick={this.redirectToCustomize}
         >

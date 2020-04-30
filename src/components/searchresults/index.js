@@ -6,7 +6,7 @@ import {
   Message,
   Icon,
   Modal,
-  Header
+  Header,
 } from "semantic-ui-react";
 import React, { Component } from "react";
 import axios from "axios";
@@ -16,6 +16,7 @@ import Gallery from "../gallery";
 import { Link } from "react-router-dom";
 import Loader from "../loader";
 import { API_URL } from "../../api/constants";
+import store from "../../store";
 
 import "./styles.css";
 
@@ -25,7 +26,7 @@ export default class SearchResults extends Component {
 
     this.state = {
       pictureselfs: [],
-      isLoading: true
+      isLoading: true,
     };
   }
 
@@ -39,6 +40,9 @@ export default class SearchResults extends Component {
   }
 
   fetchPictureselfsSearchApi = () => {
+    let config = store.getState().auth.isAuthenticated
+      ? getConfig()
+      : { params: store.getState().customize };
     return axios.get(
       API_URL +
         "p/search/" +
@@ -46,23 +50,23 @@ export default class SearchResults extends Component {
           3,
           this.props.location.search.length
         ),
-      getConfig()
+      config
     );
   };
 
   fetchPictureselfsSearch = () => {
     this.fetchPictureselfsSearchApi()
-      .then(response => {
+      .then((response) => {
         this.setState(
           {
-            pictureselfs: response.data
+            pictureselfs: response.data,
           },
           () => {
             this.setState({ isLoading: false });
           }
         );
       })
-      .catch(error => {
+      .catch((error) => {
         const errorMessage = apiErrorHandler(error);
         //alert(error);
         // to do
