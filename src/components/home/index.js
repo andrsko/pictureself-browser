@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import Loader from "../loader";
 import { API_URL } from "../../api/constants";
 import store from "../../store";
+import "./styles.css";
 
 export default class Home extends Component {
   constructor(props) {
@@ -59,8 +60,18 @@ export default class Home extends Component {
       });
   };
 
+  shuffle = (a) => {
+    var j, x, i;
+    for (i = a.length - 1; i > 0; i--) {
+      j = Math.floor(Math.random() * (i + 1));
+      x = a[i];
+      a[i] = a[j];
+      a[j] = x;
+    }
+    return a;
+  };
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, pictureselfs } = this.state;
     if (isLoading) {
       return (
         <div style={{ "margin-top": "35px" }}>
@@ -72,12 +83,15 @@ export default class Home extends Component {
       const GUTTER_WIDTH = 10;
       const GUTTER_HEIGHT = 20;
       return (
-        <Gallery
-          columnWidth={COLUMN_WIDTH}
-          gutterWidth={GUTTER_WIDTH}
-          gutterHeight={GUTTER_HEIGHT}
-          pictureselfs={this.state.pictureselfs}
-        />
+        <div>
+          <p id="home-title">Trending</p>
+          <Gallery
+            columnWidth={COLUMN_WIDTH}
+            gutterWidth={GUTTER_WIDTH}
+            gutterHeight={GUTTER_HEIGHT}
+            pictureselfs={this.shuffle(pictureselfs)}
+          />
+        </div>
       );
     }
   }
