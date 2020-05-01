@@ -497,6 +497,7 @@ export default class EditPictureself extends Component {
       // for header
       initial_pictureself_title: "",
       pictureself_description: "",
+      pictureself_tags: "",
       customizableIsChecked: false,
       nonCustomizableImageURL: "",
       nonCustomizableImageFile: null,
@@ -636,6 +637,7 @@ export default class EditPictureself extends Component {
             pictureself_title: response.data["title"],
             initial_pictureself_title: response.data["title"],
             pictureself_description: response.data["description"],
+            pictureself_tags: response.data["tags"],
             channel_username: response.data["username"],
             customizableIsChecked: false,
             nonCustomizableImageURL: response.data["image"],
@@ -681,6 +683,7 @@ export default class EditPictureself extends Component {
             pictureself_title: response.data["title"],
             initial_pictureself_title: response.data["title"],
             pictureself_description: response.data["description"],
+            pictureself_tags: response.data["tags"],
             channel_username: response.data["username"],
             customizableIsChecked: true,
             feature_order: string_ids_feature_order,
@@ -745,6 +748,7 @@ export default class EditPictureself extends Component {
     const newInfo = {
       title: this.state.pictureself_title,
       description: this.state.pictureself_description,
+      tags: this.state.pictureself_tags,
       feature_order: JSON.stringify(normalized_feature_order),
       variant_order: JSON.stringify(this.state.variant_order),
       features: JSON.stringify(this.state.features),
@@ -769,6 +773,9 @@ export default class EditPictureself extends Component {
 
   handlePictureselfDescriptionChange = (event) => {
     this.setState({ pictureself_description: event.target.value });
+  };
+  handlePictureselfTagsChange = (event) => {
+    this.setState({ pictureself_tags: event.target.value });
   };
   updateFeature = (feature_id, newTitle) => {
     let features = { ...this.state.features };
@@ -1197,6 +1204,7 @@ export default class EditPictureself extends Component {
         const newData = {
           title: this.state.pictureself_title,
           description: this.state.pictureself_description,
+          tags: this.state.pictureself_tags,
           image: nonCustomizableImageFile,
         };
 
@@ -1473,6 +1481,14 @@ export default class EditPictureself extends Component {
             placeholder="Comment"
             value={this.state.pictureself_description}
             onChange={(event) => this.handlePictureselfDescriptionChange(event)}
+            maxLength="1000"
+          />
+          <Form.TextArea
+            width="11"
+            name="pictureself_tags"
+            placeholder="Tags: angry cat, happy birthday, smile"
+            value={this.state.pictureself_tags}
+            onChange={(event) => this.handlePictureselfTagsChange(event)}
             maxLength="1000"
           />
         </Form>
