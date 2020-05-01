@@ -15,12 +15,14 @@ p.title {
   margin-top: 3px;
   margin-bottom: 3px;
   font-weight: bold;
+  display: inline;
 }
 #gallery-customize-button {
   letter-spacing: 1px;
-  font-size: 11px;
-  color: dodgerBlue;
+  font-size: 9px;
+  display: inline;
   cursor: pointer;
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
+  margin-left: 5px;
 }

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { imageComposer } from "../../utils/imagecomposer";
 import Loader from "../loader";
 import { withRouter } from "react-router-dom";
+import { Button } from "semantic-ui-react";
 
 class Gallery extends Component {
   constructor(props) {
@@ -71,22 +72,39 @@ class Gallery extends Component {
     var pCards = [];
     for (let i = 0; i < pictureselfs.length; ++i) {
       const canvasDataURL = canvasDataURLs[i];
+
       if (canvasDataURL !== undefined) {
         let pictureself = pictureselfs[i];
         const customizeButton =
           pictureself.is_customizable && !channel ? (
-            <div
+            <Button
               id="gallery-customize-button"
               onClick={() => {
                 this.redirectToCustomize(pictureself.id);
               }}
+              size="mini"
+              compact
+              color="grey"
             >
               CUSTOMIZE
-            </div>
+            </Button>
           ) : null;
+        const titleP = pictureself.title ? (
+          <Link to={`/p/${pictureself.id.toString()}/`}>
+            <p
+              title={pictureself.title}
+              className="gallery title"
+              style={{
+                width: columnWidth - 10 + "px",
+                "margin-left": "5px",
+              }}
+            >
+              {pictureself.title}
+            </p>
+          </Link>
+        ) : null;
         pCards.push(
           <div key={pictureself.id.toString()}>
-            {customizeButton}
             <Link to={`/p/${pictureself.id.toString()}/`}>
               <div
                 style={{
@@ -114,19 +132,8 @@ class Gallery extends Component {
                 />
               </div>
             </Link>
-
-            <Link to={`/p/${pictureself.id.toString()}/`}>
-              <p
-                title={pictureself.title}
-                className="gallery title"
-                style={{
-                  width: columnWidth - 10 + "px",
-                  "margin-left": "5px",
-                }}
-              >
-                {pictureself.title}
-              </p>
-            </Link>
+            {customizeButton}
+            {titleP}
 
             {channel ? null : (
               <Link to={`/${pictureself.username}/`}>
