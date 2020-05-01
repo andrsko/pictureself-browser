@@ -6,7 +6,7 @@ import {
   Message,
   Button,
   TextArea,
-  Grid
+  Grid,
 } from "semantic-ui-react";
 import { avatarEditApi } from "../../api/avatar";
 import StatusMessage from "../../components/statusmessage";
@@ -25,7 +25,7 @@ export default class EditProfile extends Component {
       avatar: avatar,
       avatarFile: null,
       avatarError: null,
-      avatarUploading: false
+      avatarUploading: false,
     };
   }
 
@@ -33,9 +33,9 @@ export default class EditProfile extends Component {
     this.setState({ [name]: value });
   };
 
-  onImageDrop = files => {
+  onImageDrop = (files) => {
     this.setState({
-      avatarFile: files[0]
+      avatarFile: files[0],
     });
   };
 
@@ -44,13 +44,13 @@ export default class EditProfile extends Component {
       name: this.state.name,
       current_password: this.state.currentPassword,
       new_password: this.state.newPassword,
-      about: this.state.about
+      about: this.state.about,
     };
     this.props.handleEdit(newProfile);
 
     // prevent spamming so user have to keep entering password for every edit submission
     this.setState({
-      currentPassword: ""
+      currentPassword: "",
     });
   };
 
@@ -63,23 +63,23 @@ export default class EditProfile extends Component {
         this.editProfile();
       } else {
         this.setState({
-          avatarUploading: true
+          avatarUploading: true,
         });
 
         avatarEditApi(avatarFile)
-          .then(response => {
+          .then((response) => {
             this.setState({
               avatar: response.data.avatar_url,
-              avatarUploading: false
+              avatarUploading: false,
             });
             this.editProfile();
           })
-          .catch(error => {
+          .catch((error) => {
             console.log(error);
             this.setState({
               avatarError: "Image Upload Error",
               avatarFile: null,
-              avatarUploading: false
+              avatarUploading: false,
             });
           });
       }
@@ -97,7 +97,7 @@ export default class EditProfile extends Component {
       avatar,
       avatarFile,
       avatarError,
-      avatarUploading
+      avatarUploading,
     } = this.state;
 
     const statusMessage = (
@@ -142,6 +142,7 @@ export default class EditProfile extends Component {
                 control={TextArea}
                 value={about}
                 onChange={this.handleChange}
+                maxLength="500"
               />
             </Grid.Column>
             <Grid.Column>
@@ -152,6 +153,7 @@ export default class EditProfile extends Component {
                 name="name"
                 value={name}
                 onChange={this.handleChange}
+                maxLength="32"
               />
               <Form.Input
                 required

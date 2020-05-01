@@ -445,6 +445,7 @@ class EditFeature extends Component {
                 value={this.props.title}
                 placeholder="Feature Title"
                 onChange={this.handleChange}
+                maxLength="200"
               />
               <Form.Button
                 class="btn"
@@ -1464,6 +1465,7 @@ export default class EditPictureself extends Component {
             placeholder="Title"
             value={this.state.pictureself_title}
             onChange={(event) => this.handlePictureselfTitleChange(event)}
+            maxLength="200"
           />
           <Form.TextArea
             width="11"
@@ -1471,6 +1473,7 @@ export default class EditPictureself extends Component {
             placeholder="Comment"
             value={this.state.pictureself_description}
             onChange={(event) => this.handlePictureselfDescriptionChange(event)}
+            maxLength="1000"
           />
         </Form>
         <br />
