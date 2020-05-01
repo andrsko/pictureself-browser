@@ -149,10 +149,9 @@ export default class P extends Component {
         width < MIN_WIDTH ? (MIN_WIDTH - width) / 2 : 0;
       const imgPaddingTopBottom =
         height < MIN_HEIGHT ? (MIN_HEIGHT - height) / 2 : 0;
-      const avatarImageSrc =
-        this.state.avatar == ""
-          ? "https://afcm.ca/wp-content/uploads/2018/06/no-photo.png"
-          : this.state.avatar;
+      const avatarImageSrc = this.state.avatar
+        ? this.state.avatar
+        : "https://afcm.ca/wp-content/uploads/2018/06/no-photo.png";
       const popupStyle = {
         borderRadius: 3,
         opacity: 0.8,
