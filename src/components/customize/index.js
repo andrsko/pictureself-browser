@@ -204,7 +204,10 @@ export default class Customize extends Component {
   };
 
   fetchPictureselfCustomizationVariantsApi = (id) => {
-    return axios.get(API_URL + "p/" + id + "/customization-variants/");
+    let config = store.getState().auth.isAuthenticated
+      ? getConfig()
+      : { params: store.getState().customize };
+    return axios.get(API_URL + "p/" + id + "/customization-variants/", config);
   };
 
   fetchPictureselfFeatureVariants = (pictureselfId, featureId) => {
