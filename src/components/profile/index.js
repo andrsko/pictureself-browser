@@ -143,7 +143,7 @@ class Profile extends Component {
           ? "https://afcm.ca/wp-content/uploads/2018/06/no-photo.png"
           : this.props.avatar;
       const COLUMN_WIDTH = 200;
-      const GUTTER_WIDTH = 10;
+      const GUTTER_WIDTH = 40;
       const GUTTER_HEIGHT = 20;
       const customizeButton = isCustomizable ? (
         <Button

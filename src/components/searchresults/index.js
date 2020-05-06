@@ -88,7 +88,7 @@ export default class SearchResults extends Component {
       );
     } else {
       const COLUMN_WIDTH = 200;
-      const GUTTER_WIDTH = 10;
+      const GUTTER_WIDTH = 40;
       const GUTTER_HEIGHT = 20;
       return (
         <div>
