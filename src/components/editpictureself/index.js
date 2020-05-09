@@ -1197,7 +1197,9 @@ export default class EditPictureself extends Component {
     const { customizableIsChecked, nonCustomizableImageFile } = this.state;
 
     if (!customizableIsChecked) {
-      if (nonCustomizableImageFile) {
+      if (!nonCustomizableImageFile && pictureselfId == 0) {
+        this.showPostError("An Image Should Be Provided");
+      } else {
         this.setState({
           isUploading: true,
         });
@@ -1205,9 +1207,9 @@ export default class EditPictureself extends Component {
           title: this.state.pictureself_title,
           description: this.state.pictureself_description,
           tags: this.state.pictureself_tags,
-          image: nonCustomizableImageFile,
         };
-
+        if (nonCustomizableImageFile)
+          newData["image"] = nonCustomizableImageFile;
         this.editNonCustomizablePictureselfApi(pictureselfId, newData).then(
           (response) => {
             const idRedirectTo =
@@ -1217,8 +1219,6 @@ export default class EditPictureself extends Component {
             this.props.history.push("/p/" + idRedirectTo);
           }
         );
-      } else {
-        this.showPostError("An Image Should Be Provided");
       }
     } else {
       if (this.atLeastOneVariant()) {
