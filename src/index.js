@@ -12,6 +12,7 @@ import UserProfileContainer from "./containers/userprofile";
 import UsersContainer from "./containers/users";
 import NotFoundPage from "./components/notfoundpage";
 import EditPictureself from "./components/editpictureself";
+import CreatePN from "./components/createpn";
 import Likes from "./components/likes";
 import SubscriptionList from "./components/subscriptionlist";
 import PrivateRoute from "./components/privateroute";
@@ -58,6 +59,7 @@ ReactDOM.render(
                 path="/p/:pictureself/edit"
                 component={EditPictureself}
               />
+              <PrivateRoute path="/createpn" component={CreatePN} />
               <Route path="/p/:pictureself/like" component={P} />
               <Route path="/p/:pictureself" component={P} />
               <Route exact path="/" component={Home} />
