@@ -20,6 +20,17 @@ class Gallery extends Component {
   }
 
   componentDidMount() {
+    this.composeImages();
+  }
+  componentDidUpdate(prevProps) {
+    if (this.props !== prevProps)
+      this.setState(
+        { canvasDataURLs: [], widths: [], heights: [], nImagesComposed: 0 },
+        this.composeImages
+      );
+  }
+
+  composeImages = () => {
     const { pictureselfs } = this.props;
     for (let i = 0; i < pictureselfs.length; ++i) {
       imageComposer(pictureselfs[i].image_urls)
@@ -45,8 +56,7 @@ class Gallery extends Component {
           alert(error);
         });
     }
-  }
-
+  };
   redirectToCustomize = (id) => {
     this.props.history.push({
       pathname: "/p/" + id + "/customize/",
