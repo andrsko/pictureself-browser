@@ -1,0 +1,70 @@
+#emoji-panel-outer {
+  width: 74%;
+  margin: auto;
+  margin-top: 15px;
+
+  position: relative;
+}
+#emoji-panel {
+  font-size: 24px;
+  overflow: scroll;
+  overflow-x: hidden;
+
+  border-radius: 5px;
+  border: 1px solid rgb(241, 241, 241);
+  padding: 0px;
+  width: 95%;
+  position: relative;
+}
+.emoji-panel-collapsed {
+  height: 49px;
+}
+.emoji-panel-expanded {
+  height: 185px;
+}
+
+#emoji-panel::-webkit-scrollbar {
+  width: 0px; /* Remove scrollbar space */
+  background: transparent; /* Optional: just make scrollbar invisible */
+}
+#emoji-panel::-webkit-scrollbar-thumb {
+  background: rgb(212, 211, 211);
+  border-radius: 0px;
+}
+#emoji-panel::-webkit-scrollbar-track {
+  background: rgb(232, 231, 231);
+}
+
+#emoji-panel-expand-button {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.9);
+
+  top: 5px;
+  right: 0px;
+}
+#emoji-panel-collapse-button {
+  position: absolute;
+
+  background-color: rgba(255, 255, 255, 0.9);
+  right: 0px;
+  top: 40%;
+}
+
+#emoji-panel-text-wrapper {
+  position: absolute;
+  left: 15px;
+  overflow: scroll;
+  overflow-x: hidden;
+  height: 100%;
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+#emoji-panel-text-wrapper::-webkit-scrollbar-thumb {
+  background: rgb(212, 211, 211);
+  border-radius: 0px;
+}
+#emoji-panel-text-wrapper::-webkit-scrollbar-track {
+  background: rgb(232, 231, 231);
+}

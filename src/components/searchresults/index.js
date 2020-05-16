@@ -17,7 +17,7 @@ import { Link } from "react-router-dom";
 import Loader from "../loader";
 import { API_URL } from "../../api/constants";
 import store from "../../store";
-
+import EmojiPanel from "../emojipanel";
 import "./styles.css";
 
 export default class SearchResults extends Component {
@@ -43,15 +43,10 @@ export default class SearchResults extends Component {
     let config = store.getState().auth.isAuthenticated
       ? getConfig()
       : { params: store.getState().customize };
-    return axios.get(
-      API_URL +
-        "p/search/" +
-        this.props.location.search.substring(
-          3,
-          this.props.location.search.length
-        ),
-      config
-    );
+    const search = this.props.location.search;
+    const params = new URLSearchParams(search);
+    const query = params.get("q");
+    return axios.get(API_URL + "p/search/" + query, config);
   };
 
   fetchPictureselfsSearch = () => {
@@ -76,14 +71,23 @@ export default class SearchResults extends Component {
 
   render() {
     const { isLoading } = this.state;
+    const search = this.props.location.search;
+    const params = new URLSearchParams(search);
+    const xpnd = params.get("xpnd") === "true";
+    const parsedScr = parseFloat(params.get("scr"));
+    const scr = !isNaN(parsedScr) ? parsedScr : 0;
+
     const noResultsMessage =
       this.state.pictureselfs.length == 0 ? (
         <p id="search-no-results-message">No results</p>
       ) : null;
     if (isLoading) {
       return (
-        <div style={{ "margin-top": "35px" }}>
-          <Loader />
+        <div>
+          <EmojiPanel isExpanded={xpnd} scrollTop={scr} />
+          <div style={{ "margin-top": "35px" }}>
+            <Loader />
+          </div>
         </div>
       );
     } else {
@@ -92,6 +96,7 @@ export default class SearchResults extends Component {
       const GUTTER_HEIGHT = 20;
       return (
         <div>
+          <EmojiPanel isExpanded={xpnd} scrollTop={scr} />
           {noResultsMessage}
           <Gallery
             columnWidth={COLUMN_WIDTH}

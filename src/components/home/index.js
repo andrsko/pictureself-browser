@@ -1,20 +1,12 @@
-import {
-  Button,
-  Checkbox,
-  Form,
-  Dropdown,
-  Message,
-  Icon,
-  Modal,
-  Header,
-} from "semantic-ui-react";
+import { Button } from "semantic-ui-react";
 import React, { Component } from "react";
 import axios from "axios";
 import { getConfig } from "../../utils/config";
+import { emojis } from "../../utils/emojis";
 import { apiErrorHandler } from "../../utils/errorhandler";
 import Gallery from "../gallery";
-import { Link } from "react-router-dom";
 import Loader from "../loader";
+import EmojiPanel from "../emojipanel";
 import { API_URL } from "../../api/constants";
 import store from "../../store";
 import "./styles.css";
@@ -70,12 +62,16 @@ export default class Home extends Component {
     }
     return a;
   };
+
   render() {
     const { isLoading, pictureselfs } = this.state;
     if (isLoading) {
       return (
-        <div style={{ "margin-top": "35px" }}>
-          <Loader />
+        <div>
+          <EmojiPanel isExpanded={false} scrollTop={0} />
+          <div style={{ "margin-top": "35px" }}>
+            <Loader />
+          </div>
         </div>
       );
     } else {
@@ -84,6 +80,7 @@ export default class Home extends Component {
       const GUTTER_HEIGHT = 20;
       return (
         <div>
+          <EmojiPanel isExpanded={false} scrollTop={0} />
           <p id="home-title">Trending</p>
           <Gallery
             columnWidth={COLUMN_WIDTH}
